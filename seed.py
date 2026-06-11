@@ -76,6 +76,9 @@ DRIVERS = [
     ("Brendon Hartley", "New Zealand", date(1989, 11, 10)),
     ("Stoffel Vandoorne", "Belgium", date(1992, 3, 26)),
     ("Marcus Ericsson", "Sweden", date(1990, 9, 2)),
+    ("Felipe Massa", "Brazil", date(1981, 4, 25)),
+    ("Jolyon Palmer", "United Kingdom", date(1991, 1, 20)),
+    ("Pascal Wehrlein", "Germany", date(1994, 10, 18)),
 ]
 
 # (driver_name, season, number)
@@ -253,6 +256,27 @@ DRIVER_NUMBERS = [
     ("Stoffel Vandoorne", 2018, 2),
     ("Charles Leclerc", 2018, 16),
     ("Marcus Ericsson", 2018, 9),
+    # 2017
+    ("Lewis Hamilton", 2017, 44),
+    ("Valtteri Bottas", 2017, 77),
+    ("Sebastian Vettel", 2017, 5),
+    ("Kimi Raikkonen", 2017, 7),
+    ("Daniel Ricciardo", 2017, 3),
+    ("Max Verstappen", 2017, 33),
+    ("Sergio Perez", 2017, 11),
+    ("Esteban Ocon", 2017, 31),
+    ("Felipe Massa", 2017, 19),
+    ("Lance Stroll", 2017, 18),
+    ("Nico Hulkenberg", 2017, 27),
+    ("Jolyon Palmer", 2017, 30),
+    ("Carlos Sainz", 2017, 55),
+    ("Daniil Kvyat", 2017, 26),
+    ("Romain Grosjean", 2017, 8),
+    ("Kevin Magnussen", 2017, 20),
+    ("Fernando Alonso", 2017, 14),
+    ("Stoffel Vandoorne", 2017, 2),
+    ("Marcus Ericsson", 2017, 9),
+    ("Pascal Wehrlein", 2017, 94),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -445,6 +469,28 @@ GRANDS_PRIX = {
         (19, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Max Verstappen", "Red Bull Racing"),
         (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Lewis Hamilton", "Mercedes"),
         (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
+    ],
+    2017: [
+        (1, "Australian Grand Prix", "Albert Park Circuit", "Sebastian Vettel", "Ferrari"),
+        (2, "Chinese Grand Prix", "Shanghai International Circuit", "Lewis Hamilton", "Mercedes"),
+        (3, "Bahrain Grand Prix", "Bahrain International Circuit", "Sebastian Vettel", "Ferrari"),
+        (4, "Russian Grand Prix", "Sochi Autodrom", "Valtteri Bottas", "Mercedes"),
+        (5, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Lewis Hamilton", "Mercedes"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Sebastian Vettel", "Ferrari"),
+        (7, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Lewis Hamilton", "Mercedes"),
+        (8, "Azerbaijan Grand Prix", "Baku City Circuit", "Daniel Ricciardo", "Red Bull Racing"),
+        (9, "Austrian Grand Prix", "Red Bull Ring", "Valtteri Bottas", "Mercedes"),
+        (10, "British Grand Prix", "Silverstone Circuit", "Lewis Hamilton", "Mercedes"),
+        (11, "Hungarian Grand Prix", "Hungaroring", "Sebastian Vettel", "Ferrari"),
+        (12, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Lewis Hamilton", "Mercedes"),
+        (13, "Italian Grand Prix", "Autodromo Nazionale Monza", "Lewis Hamilton", "Mercedes"),
+        (14, "Singapore Grand Prix", "Marina Bay Street Circuit", "Lewis Hamilton", "Mercedes"),
+        (15, "Malaysian Grand Prix", "Sepang International Circuit", "Max Verstappen", "Red Bull Racing"),
+        (16, "Japanese Grand Prix", "Suzuka Circuit", "Lewis Hamilton", "Mercedes"),
+        (17, "United States Grand Prix", "Circuit of the Americas", "Lewis Hamilton", "Mercedes"),
+        (18, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Max Verstappen", "Red Bull Racing"),
+        (19, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Sebastian Vettel", "Ferrari"),
+        (20, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Valtteri Bottas", "Mercedes"),
     ],
 }
 
