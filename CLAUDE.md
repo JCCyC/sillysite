@@ -17,7 +17,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 - `main.py` defines the FastAPI app. `/` and `/about` each return
   `{"msg": "<random message>"}` chosen from a small list of candidate messages. It also defines
   CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `car_number`), and
-  `/grands-prix/{season}/{sequence_number}` (keyed by the composite season/sequence number).
+  `/grands-prix/{season}/{sequence_number}` (keyed by the composite season/sequence number), and
+  serves `static/favicon.ico` at `/favicon.ico`.
 - `config.py` loads database connection settings (`DB_HOST`, `DB_PORT`, `DB_SCHEMA`, `DB_NAME`,
   `DB_USER`, `DB_PASSWORD`) from environment variables / a `.env` file (see `.env.example`).
 - `database.py` configures the SQLAlchemy engine/session from the values in `config.py`,

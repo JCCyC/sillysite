@@ -1,6 +1,7 @@
 import random
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 import models
@@ -29,6 +30,11 @@ ABOUT_MESSAGES = [
 @app.get("/")
 def read_root():
     return {"msg": random.choice(HOME_MESSAGES)}
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse("static/favicon.ico")
 
 
 @app.get("/about")
