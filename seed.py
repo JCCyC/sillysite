@@ -25,6 +25,8 @@ TEAMS = [
     {"name": "Racing Bulls", "country": "Italy", "founded_year": 2024},
     {"name": "Haas", "country": "United States", "founded_year": 2016},
     {"name": "Kick Sauber", "country": "Switzerland", "founded_year": 1970},
+    {"name": "AlphaTauri", "country": "Italy", "founded_year": 2020},
+    {"name": "Alfa Romeo", "country": "Switzerland", "founded_year": 2019},
 ]
 
 # (name, nationality, date_of_birth)
@@ -55,6 +57,7 @@ DRIVERS = [
     ("Kevin Magnussen", "Denmark", date(1992, 10, 5)),
     ("Valtteri Bottas", "Finland", date(1989, 8, 28)),
     ("Zhou Guanyu", "China", date(1999, 5, 30)),
+    ("Nyck de Vries", "Netherlands", date(1995, 2, 6)),
 ]
 
 # (driver_name, season, number)
@@ -103,6 +106,29 @@ DRIVER_NUMBERS = [
     ("Kevin Magnussen", 2024, 20),
     ("Valtteri Bottas", 2024, 77),
     ("Zhou Guanyu", 2024, 24),
+    # 2023
+    ("Max Verstappen", 2023, 1),
+    ("Sergio Perez", 2023, 11),
+    ("Charles Leclerc", 2023, 16),
+    ("Carlos Sainz", 2023, 55),
+    ("Lewis Hamilton", 2023, 44),
+    ("George Russell", 2023, 63),
+    ("Lando Norris", 2023, 4),
+    ("Oscar Piastri", 2023, 81),
+    ("Fernando Alonso", 2023, 14),
+    ("Lance Stroll", 2023, 18),
+    ("Pierre Gasly", 2023, 10),
+    ("Esteban Ocon", 2023, 31),
+    ("Alex Albon", 2023, 23),
+    ("Logan Sargeant", 2023, 2),
+    ("Yuki Tsunoda", 2023, 22),
+    ("Nyck de Vries", 2023, 21),
+    ("Daniel Ricciardo", 2023, 3),
+    ("Liam Lawson", 2023, 30),
+    ("Nico Hulkenberg", 2023, 27),
+    ("Kevin Magnussen", 2023, 20),
+    ("Valtteri Bottas", 2023, 77),
+    ("Zhou Guanyu", 2023, 24),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -158,6 +184,30 @@ GRANDS_PRIX = {
         (22, "Las Vegas Grand Prix", "Las Vegas Strip Circuit", "George Russell", "Mercedes"),
         (23, "Qatar Grand Prix", "Lusail International Circuit", "Max Verstappen", "Red Bull Racing"),
         (24, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lando Norris", "McLaren"),
+    ],
+    2023: [
+        (1, "Bahrain Grand Prix", "Bahrain International Circuit", "Max Verstappen", "Red Bull Racing"),
+        (2, "Saudi Arabian Grand Prix", "Jeddah Corniche Circuit", "Sergio Perez", "Red Bull Racing"),
+        (3, "Australian Grand Prix", "Albert Park Circuit", "Max Verstappen", "Red Bull Racing"),
+        (4, "Azerbaijan Grand Prix", "Baku City Circuit", "Sergio Perez", "Red Bull Racing"),
+        (5, "Miami Grand Prix", "Miami International Autodrome", "Max Verstappen", "Red Bull Racing"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Max Verstappen", "Red Bull Racing"),
+        (7, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Max Verstappen", "Red Bull Racing"),
+        (8, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Max Verstappen", "Red Bull Racing"),
+        (9, "Austrian Grand Prix", "Red Bull Ring", "Max Verstappen", "Red Bull Racing"),
+        (10, "British Grand Prix", "Silverstone Circuit", "Max Verstappen", "Red Bull Racing"),
+        (11, "Hungarian Grand Prix", "Hungaroring", "Max Verstappen", "Red Bull Racing"),
+        (12, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Max Verstappen", "Red Bull Racing"),
+        (13, "Dutch Grand Prix", "Circuit Zandvoort", "Max Verstappen", "Red Bull Racing"),
+        (14, "Italian Grand Prix", "Autodromo Nazionale Monza", "Max Verstappen", "Red Bull Racing"),
+        (15, "Singapore Grand Prix", "Marina Bay Street Circuit", "Carlos Sainz", "Ferrari"),
+        (16, "Japanese Grand Prix", "Suzuka Circuit", "Max Verstappen", "Red Bull Racing"),
+        (17, "Qatar Grand Prix", "Lusail International Circuit", "Max Verstappen", "Red Bull Racing"),
+        (18, "United States Grand Prix", "Circuit of the Americas", "Max Verstappen", "Red Bull Racing"),
+        (19, "Mexico City Grand Prix", "Autodromo Hermanos Rodriguez", "Max Verstappen", "Red Bull Racing"),
+        (20, "Sao Paulo Grand Prix", "Autodromo Jose Carlos Pace", "Max Verstappen", "Red Bull Racing"),
+        (21, "Las Vegas Grand Prix", "Las Vegas Strip Circuit", "Max Verstappen", "Red Bull Racing"),
+        (22, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Max Verstappen", "Red Bull Racing"),
     ],
 }
 
