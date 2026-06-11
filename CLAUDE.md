@@ -8,8 +8,9 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 
 ## Commands
 
-- Install dependencies: `pip install -r requirements.txt`
-- Run the dev server: `uvicorn main:app --reload`
+- Set up the virtual environment: `python3 -m venv .venv`
+- Install dependencies: `.venv/bin/pip install -r requirements.txt`
+- Run the dev server: `.venv/bin/uvicorn main:app --reload`
 
 ## Architecture
 
