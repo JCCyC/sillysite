@@ -13,6 +13,12 @@ class TeamCreate(TeamBase):
     pass
 
 
+class TeamUpdate(BaseModel):
+    name: str | None = None
+    country: str | None = None
+    founded_year: int | None = None
+
+
 class Team(TeamBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,6 +33,12 @@ class DriverBase(BaseModel):
 
 class DriverCreate(DriverBase):
     pass
+
+
+class DriverUpdate(BaseModel):
+    name: str | None = None
+    nationality: str | None = None
+    date_of_birth: date | None = None
 
 
 class Driver(DriverBase):
@@ -45,6 +57,12 @@ class DriverNumberCreate(DriverNumberBase):
     pass
 
 
+class DriverNumberUpdate(BaseModel):
+    driver_id: int | None = None
+    season: int | None = None
+    number: int | None = None
+
+
 class DriverNumber(DriverNumberBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -60,6 +78,15 @@ class GrandPrixBase(BaseModel):
 
 class GrandPrixCreate(GrandPrixBase):
     pass
+
+
+class GrandPrixUpdate(BaseModel):
+    season: int | None = None
+    sequence_number: int | None = None
+    name: str | None = None
+    track_name: str | None = None
+    winning_driver_id: int | None = None
+    winning_team_id: int | None = None
 
 
 class GrandPrix(GrandPrixBase):

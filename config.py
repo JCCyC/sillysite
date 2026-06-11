@@ -10,3 +10,5 @@ DB_SCHEMA = os.environ.get("DB_SCHEMA", "public")
 DB_NAME = os.environ.get("DB_NAME", "sillysite")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "")
+
+API_KEY = os.environ.get("API_KEY", "")

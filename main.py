@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 import models
 import schemas
+from auth import require_api_key
 from database import engine, get_db
 
 app = FastAPI()
@@ -70,7 +71,12 @@ def get_team(team_id: int, db: Session = Depends(get_db)):
     return team
 
 
-@app.post("/teams", response_model=schemas.Team, status_code=201)
+@app.post(
+    "/teams",
+    response_model=schemas.Team,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
 def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
     db_team = models.Team(**team.model_dump())
     db.add(db_team)
@@ -79,19 +85,27 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
     return db_team
 
 
-@app.put("/teams/{team_id}", response_model=schemas.Team)
-def update_team(team_id: int, team: schemas.TeamCreate, db: Session = Depends(get_db)):
+@app.put(
+    "/teams/{team_id}",
+    response_model=schemas.Team,
+    dependencies=[Depends(require_api_key)],
+)
+def update_team(team_id: int, team: schemas.TeamUpdate, db: Session = Depends(get_db)):
     db_team = db.get(models.Team, team_id)
     if db_team is None:
         raise HTTPException(status_code=404, detail="Team not found")
-    for field, value in team.model_dump().items():
+    for field, value in team.model_dump(exclude_unset=True).items():
         setattr(db_team, field, value)
     db.commit()
     db.refresh(db_team)
     return db_team
 
 
-@app.delete("/teams/{team_id}", status_code=204)
+@app.delete(
+    "/teams/{team_id}",
+    status_code=204,
+    dependencies=[Depends(require_api_key)],
+)
 def delete_team(team_id: int, db: Session = Depends(get_db)):
     db_team = db.get(models.Team, team_id)
     if db_team is None:
@@ -116,7 +130,12 @@ def get_driver(driver_id: int, db: Session = Depends(get_db)):
     return driver
 
 
-@app.post("/drivers", response_model=schemas.Driver, status_code=201)
+@app.post(
+    "/drivers",
+    response_model=schemas.Driver,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
 def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     db_driver = models.Driver(**driver.model_dump())
     db.add(db_driver)
@@ -125,21 +144,29 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     return db_driver
 
 
-@app.put("/drivers/{driver_id}", response_model=schemas.Driver)
+@app.put(
+    "/drivers/{driver_id}",
+    response_model=schemas.Driver,
+    dependencies=[Depends(require_api_key)],
+)
 def update_driver(
-    driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)
+    driver_id: int, driver: schemas.DriverUpdate, db: Session = Depends(get_db)
 ):
     db_driver = db.get(models.Driver, driver_id)
     if db_driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
-    for field, value in driver.model_dump().items():
+    for field, value in driver.model_dump(exclude_unset=True).items():
         setattr(db_driver, field, value)
     db.commit()
     db.refresh(db_driver)
     return db_driver
 
 
-@app.delete("/drivers/{driver_id}", status_code=204)
+@app.delete(
+    "/drivers/{driver_id}",
+    status_code=204,
+    dependencies=[Depends(require_api_key)],
+)
 def delete_driver(driver_id: int, db: Session = Depends(get_db)):
     db_driver = db.get(models.Driver, driver_id)
     if db_driver is None:
@@ -166,7 +193,12 @@ def get_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)
     return driver_number
 
 
-@app.post("/driver-numbers", response_model=schemas.DriverNumber, status_code=201)
+@app.post(
+    "/driver-numbers",
+    response_model=schemas.DriverNumber,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
 def create_driver_number(
     driver_number: schemas.DriverNumberCreate, db: Session = Depends(get_db)
 ):
@@ -178,25 +210,31 @@ def create_driver_number(
 
 
 @app.put(
-    "/driver-numbers/{driver_id}/{season}", response_model=schemas.DriverNumber
+    "/driver-numbers/{driver_id}/{season}",
+    response_model=schemas.DriverNumber,
+    dependencies=[Depends(require_api_key)],
 )
 def update_driver_number(
     driver_id: int,
     season: int,
-    driver_number: schemas.DriverNumberCreate,
+    driver_number: schemas.DriverNumberUpdate,
     db: Session = Depends(get_db),
 ):
     db_driver_number = db.get(models.DriverNumber, (driver_id, season))
     if db_driver_number is None:
         raise HTTPException(status_code=404, detail="Driver number not found")
-    for field, value in driver_number.model_dump().items():
+    for field, value in driver_number.model_dump(exclude_unset=True).items():
         setattr(db_driver_number, field, value)
     db.commit()
     db.refresh(db_driver_number)
     return db_driver_number
 
 
-@app.delete("/driver-numbers/{driver_id}/{season}", status_code=204)
+@app.delete(
+    "/driver-numbers/{driver_id}/{season}",
+    status_code=204,
+    dependencies=[Depends(require_api_key)],
+)
 def delete_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)):
     db_driver_number = db.get(models.DriverNumber, (driver_id, season))
     if db_driver_number is None:
@@ -221,7 +259,12 @@ def get_grand_prix(season: int, sequence_number: int, db: Session = Depends(get_
     return gp
 
 
-@app.post("/grands-prix", response_model=schemas.GrandPrix, status_code=201)
+@app.post(
+    "/grands-prix",
+    response_model=schemas.GrandPrix,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
 def create_grand_prix(gp: schemas.GrandPrixCreate, db: Session = Depends(get_db)):
     db_gp = models.GrandPrix(**gp.model_dump())
     db.add(db_gp)
@@ -230,24 +273,32 @@ def create_grand_prix(gp: schemas.GrandPrixCreate, db: Session = Depends(get_db)
     return db_gp
 
 
-@app.put("/grands-prix/{season}/{sequence_number}", response_model=schemas.GrandPrix)
+@app.put(
+    "/grands-prix/{season}/{sequence_number}",
+    response_model=schemas.GrandPrix,
+    dependencies=[Depends(require_api_key)],
+)
 def update_grand_prix(
     season: int,
     sequence_number: int,
-    gp: schemas.GrandPrixCreate,
+    gp: schemas.GrandPrixUpdate,
     db: Session = Depends(get_db),
 ):
     db_gp = db.get(models.GrandPrix, (season, sequence_number))
     if db_gp is None:
         raise HTTPException(status_code=404, detail="Grand Prix not found")
-    for field, value in gp.model_dump().items():
+    for field, value in gp.model_dump(exclude_unset=True).items():
         setattr(db_gp, field, value)
     db.commit()
     db.refresh(db_gp)
     return db_gp
 
 
-@app.delete("/grands-prix/{season}/{sequence_number}", status_code=204)
+@app.delete(
+    "/grands-prix/{season}/{sequence_number}",
+    status_code=204,
+    dependencies=[Depends(require_api_key)],
+)
 def delete_grand_prix(season: int, sequence_number: int, db: Session = Depends(get_db)):
     db_gp = db.get(models.GrandPrix, (season, sequence_number))
     if db_gp is None:

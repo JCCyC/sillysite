@@ -1,0 +1,341 @@
+{
+  "info": {
+    "name": "Silly Site API",
+    "description": "Collection for testing the Silly Site FastAPI app.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "api_key",
+      "value": "changeme"
+    }
+  ],
+  "item": [
+    {
+      "name": "General",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/"
+          }
+        },
+        {
+          "name": "About",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/about"
+          }
+        },
+        {
+          "name": "Favicon",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/favicon.ico"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "List Teams",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/teams"
+          }
+        },
+        {
+          "name": "Get Team",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/teams/1"
+          }
+        },
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Team\",\n  \"country\": \"Testland\",\n  \"founded_year\": 2020\n}"
+            },
+            "url": "{{base_url}}/teams"
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Team\",\n  \"country\": \"Testland\",\n  \"founded_year\": 2021\n}"
+            },
+            "url": "{{base_url}}/teams/1"
+          }
+        },
+        {
+          "name": "Delete Team",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/teams/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drivers",
+      "item": [
+        {
+          "name": "List Drivers",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/drivers"
+          }
+        },
+        {
+          "name": "Get Driver",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/drivers/1"
+          }
+        },
+        {
+          "name": "Create Driver",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Driver\",\n  \"nationality\": \"Testland\",\n  \"date_of_birth\": \"1995-01-01\"\n}"
+            },
+            "url": "{{base_url}}/drivers"
+          }
+        },
+        {
+          "name": "Update Driver",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Driver\",\n  \"nationality\": \"Testland\",\n  \"date_of_birth\": \"1995-01-01\"\n}"
+            },
+            "url": "{{base_url}}/drivers/1"
+          }
+        },
+        {
+          "name": "Delete Driver",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/drivers/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Driver Numbers",
+      "item": [
+        {
+          "name": "List Driver Numbers",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/driver-numbers"
+          }
+        },
+        {
+          "name": "Get Driver Number",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/driver-numbers/1/2025"
+          }
+        },
+        {
+          "name": "Create Driver Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driver_id\": 1,\n  \"season\": 2025,\n  \"number\": 1\n}"
+            },
+            "url": "{{base_url}}/driver-numbers"
+          }
+        },
+        {
+          "name": "Update Driver Number",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driver_id\": 1,\n  \"season\": 2025,\n  \"number\": 44\n}"
+            },
+            "url": "{{base_url}}/driver-numbers/1/2025"
+          }
+        },
+        {
+          "name": "Delete Driver Number",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/driver-numbers/1/2025"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grands Prix",
+      "item": [
+        {
+          "name": "List Grands Prix",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/grands-prix"
+          }
+        },
+        {
+          "name": "Get Grand Prix",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/grands-prix/2025/1"
+          }
+        },
+        {
+          "name": "Create Grand Prix",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"season\": 2025,\n  \"sequence_number\": 1,\n  \"name\": \"Test Grand Prix\",\n  \"track_name\": \"Test Circuit\",\n  \"winning_driver_id\": 1,\n  \"winning_team_id\": 1\n}"
+            },
+            "url": "{{base_url}}/grands-prix"
+          }
+        },
+        {
+          "name": "Update Grand Prix",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"season\": 2025,\n  \"sequence_number\": 1,\n  \"name\": \"Test Grand Prix\",\n  \"track_name\": \"Test Circuit\",\n  \"winning_driver_id\": 1,\n  \"winning_team_id\": 1\n}"
+            },
+            "url": "{{base_url}}/grands-prix/2025/1"
+          }
+        },
+        {
+          "name": "Delete Grand Prix",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/grands-prix/2025/1"
+          }
+        }
+      ]
+    }
+  ]
+}
