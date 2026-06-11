@@ -32,6 +32,7 @@ TEAMS = [
     {"name": "Toro Rosso", "country": "Italy", "founded_year": 2006},
     {"name": "Force India", "country": "India", "founded_year": 2008},
     {"name": "Sauber", "country": "Switzerland", "founded_year": 1993},
+    {"name": "Manor Racing", "country": "United Kingdom", "founded_year": 2016},
 ]
 
 # (name, nationality, date_of_birth)
@@ -79,6 +80,10 @@ DRIVERS = [
     ("Felipe Massa", "Brazil", date(1981, 4, 25)),
     ("Jolyon Palmer", "United Kingdom", date(1991, 1, 20)),
     ("Pascal Wehrlein", "Germany", date(1994, 10, 18)),
+    ("Nico Rosberg", "Germany", date(1985, 6, 27)),
+    ("Jenson Button", "United Kingdom", date(1980, 1, 19)),
+    ("Esteban Gutierrez", "Mexico", date(1991, 8, 5)),
+    ("Rio Haryanto", "Indonesia", date(1993, 1, 22)),
 ]
 
 # (driver_name, season, number)
@@ -277,6 +282,27 @@ DRIVER_NUMBERS = [
     ("Stoffel Vandoorne", 2017, 2),
     ("Marcus Ericsson", 2017, 9),
     ("Pascal Wehrlein", 2017, 94),
+    # 2016
+    ("Lewis Hamilton", 2016, 44),
+    ("Nico Rosberg", 2016, 6),
+    ("Sebastian Vettel", 2016, 5),
+    ("Kimi Raikkonen", 2016, 7),
+    ("Daniel Ricciardo", 2016, 3),
+    ("Daniil Kvyat", 2016, 26),
+    ("Valtteri Bottas", 2016, 77),
+    ("Felipe Massa", 2016, 19),
+    ("Sergio Perez", 2016, 11),
+    ("Nico Hulkenberg", 2016, 27),
+    ("Fernando Alonso", 2016, 14),
+    ("Jenson Button", 2016, 22),
+    ("Max Verstappen", 2016, 33),
+    ("Carlos Sainz", 2016, 55),
+    ("Kevin Magnussen", 2016, 20),
+    ("Jolyon Palmer", 2016, 30),
+    ("Romain Grosjean", 2016, 8),
+    ("Esteban Gutierrez", 2016, 21),
+    ("Pascal Wehrlein", 2016, 94),
+    ("Rio Haryanto", 2016, 88),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -491,6 +517,29 @@ GRANDS_PRIX = {
         (18, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Max Verstappen", "Red Bull Racing"),
         (19, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Sebastian Vettel", "Ferrari"),
         (20, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Valtteri Bottas", "Mercedes"),
+    ],
+    2016: [
+        (1, "Australian Grand Prix", "Albert Park Circuit", "Nico Rosberg", "Mercedes"),
+        (2, "Bahrain Grand Prix", "Bahrain International Circuit", "Nico Rosberg", "Mercedes"),
+        (3, "Chinese Grand Prix", "Shanghai International Circuit", "Nico Rosberg", "Mercedes"),
+        (4, "Russian Grand Prix", "Sochi Autodrom", "Nico Rosberg", "Mercedes"),
+        (5, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Max Verstappen", "Red Bull Racing"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Lewis Hamilton", "Mercedes"),
+        (7, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Lewis Hamilton", "Mercedes"),
+        (8, "European Grand Prix", "Baku City Circuit", "Nico Rosberg", "Mercedes"),
+        (9, "Austrian Grand Prix", "Red Bull Ring", "Lewis Hamilton", "Mercedes"),
+        (10, "British Grand Prix", "Silverstone Circuit", "Lewis Hamilton", "Mercedes"),
+        (11, "Hungarian Grand Prix", "Hungaroring", "Lewis Hamilton", "Mercedes"),
+        (12, "German Grand Prix", "Hockenheimring", "Lewis Hamilton", "Mercedes"),
+        (13, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Nico Rosberg", "Mercedes"),
+        (14, "Italian Grand Prix", "Autodromo Nazionale Monza", "Nico Rosberg", "Mercedes"),
+        (15, "Singapore Grand Prix", "Marina Bay Street Circuit", "Nico Rosberg", "Mercedes"),
+        (16, "Malaysian Grand Prix", "Sepang International Circuit", "Daniel Ricciardo", "Red Bull Racing"),
+        (17, "Japanese Grand Prix", "Suzuka Circuit", "Nico Rosberg", "Mercedes"),
+        (18, "United States Grand Prix", "Circuit of the Americas", "Lewis Hamilton", "Mercedes"),
+        (19, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Lewis Hamilton", "Mercedes"),
+        (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Lewis Hamilton", "Mercedes"),
+        (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
     ],
 }
 
