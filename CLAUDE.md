@@ -25,3 +25,5 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 - `models.py` defines the Formula One data model: `Team`, `Driver`, and `GrandPrix`. Tables are
   created automatically on startup via `Base.metadata.create_all`.
 - `schemas.py` defines the Pydantic request/response models used by the CRUD endpoints.
+- `seed.py` is a one-off script that populates the database with 2025 Formula One season data
+  (run with `.venv/bin/python seed.py`).
