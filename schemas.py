@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -18,10 +20,9 @@ class Team(TeamBase):
 
 
 class DriverBase(BaseModel):
-    car_number: int
-    country: str
-    team_id: int
     name: str
+    nationality: str
+    date_of_birth: date
 
 
 class DriverCreate(DriverBase):
@@ -31,13 +32,30 @@ class DriverCreate(DriverBase):
 class Driver(DriverBase):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
+
+
+class DriverNumberBase(BaseModel):
+    driver_id: int
+    season: int
+    number: int
+
+
+class DriverNumberCreate(DriverNumberBase):
+    pass
+
+
+class DriverNumber(DriverNumberBase):
+    model_config = ConfigDict(from_attributes=True)
+
 
 class GrandPrixBase(BaseModel):
     season: int
     sequence_number: int
     name: str
     track_name: str
-    winning_driver_car_number: int | None = None
+    winning_driver_id: int | None = None
+    winning_team_id: int | None = None
 
 
 class GrandPrixCreate(GrandPrixBase):

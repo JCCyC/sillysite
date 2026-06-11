@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -12,18 +12,27 @@ class Team(Base):
     country = Column(String, nullable=False)
     founded_year = Column(Integer, nullable=False)
 
-    drivers = relationship("Driver", back_populates="team")
-
 
 class Driver(Base):
     __tablename__ = "drivers"
 
-    car_number = Column(Integer, primary_key=True)
-    country = Column(String, nullable=False)
-    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
+    nationality = Column(String, nullable=False)
+    date_of_birth = Column(Date, nullable=False)
 
-    team = relationship("Team", back_populates="drivers")
+    numbers = relationship("DriverNumber", back_populates="driver")
+
+
+class DriverNumber(Base):
+    __tablename__ = "driver_numbers"
+    __table_args__ = (UniqueConstraint("season", "number"),)
+
+    driver_id = Column(Integer, ForeignKey("drivers.id"), primary_key=True)
+    season = Column(Integer, primary_key=True)
+    number = Column(Integer, nullable=False)
+
+    driver = relationship("Driver", back_populates="numbers")
 
 
 class GrandPrix(Base):
@@ -33,8 +42,8 @@ class GrandPrix(Base):
     sequence_number = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     track_name = Column(String, nullable=False)
-    winning_driver_car_number = Column(
-        Integer, ForeignKey("drivers.car_number"), nullable=True
-    )
+    winning_driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=True)
+    winning_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
 
     winning_driver = relationship("Driver")
+    winning_team = relationship("Team")

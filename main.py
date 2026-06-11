@@ -96,9 +96,9 @@ def list_drivers(db: Session = Depends(get_db)):
     return db.query(models.Driver).all()
 
 
-@app.get("/drivers/{car_number}", response_model=schemas.Driver)
-def get_driver(car_number: int, db: Session = Depends(get_db)):
-    driver = db.get(models.Driver, car_number)
+@app.get("/drivers/{driver_id}", response_model=schemas.Driver)
+def get_driver(driver_id: int, db: Session = Depends(get_db)):
+    driver = db.get(models.Driver, driver_id)
     if driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
     return driver
@@ -113,11 +113,11 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     return db_driver
 
 
-@app.put("/drivers/{car_number}", response_model=schemas.Driver)
+@app.put("/drivers/{driver_id}", response_model=schemas.Driver)
 def update_driver(
-    car_number: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)
+    driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)
 ):
-    db_driver = db.get(models.Driver, car_number)
+    db_driver = db.get(models.Driver, driver_id)
     if db_driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
     for field, value in driver.model_dump().items():
@@ -127,12 +127,69 @@ def update_driver(
     return db_driver
 
 
-@app.delete("/drivers/{car_number}", status_code=204)
-def delete_driver(car_number: int, db: Session = Depends(get_db)):
-    db_driver = db.get(models.Driver, car_number)
+@app.delete("/drivers/{driver_id}", status_code=204)
+def delete_driver(driver_id: int, db: Session = Depends(get_db)):
+    db_driver = db.get(models.Driver, driver_id)
     if db_driver is None:
         raise HTTPException(status_code=404, detail="Driver not found")
     db.delete(db_driver)
+    db.commit()
+
+
+# --- Driver Numbers ---
+
+
+@app.get("/driver-numbers", response_model=list[schemas.DriverNumber])
+def list_driver_numbers(db: Session = Depends(get_db)):
+    return db.query(models.DriverNumber).all()
+
+
+@app.get(
+    "/driver-numbers/{driver_id}/{season}", response_model=schemas.DriverNumber
+)
+def get_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)):
+    driver_number = db.get(models.DriverNumber, (driver_id, season))
+    if driver_number is None:
+        raise HTTPException(status_code=404, detail="Driver number not found")
+    return driver_number
+
+
+@app.post("/driver-numbers", response_model=schemas.DriverNumber, status_code=201)
+def create_driver_number(
+    driver_number: schemas.DriverNumberCreate, db: Session = Depends(get_db)
+):
+    db_driver_number = models.DriverNumber(**driver_number.model_dump())
+    db.add(db_driver_number)
+    db.commit()
+    db.refresh(db_driver_number)
+    return db_driver_number
+
+
+@app.put(
+    "/driver-numbers/{driver_id}/{season}", response_model=schemas.DriverNumber
+)
+def update_driver_number(
+    driver_id: int,
+    season: int,
+    driver_number: schemas.DriverNumberCreate,
+    db: Session = Depends(get_db),
+):
+    db_driver_number = db.get(models.DriverNumber, (driver_id, season))
+    if db_driver_number is None:
+        raise HTTPException(status_code=404, detail="Driver number not found")
+    for field, value in driver_number.model_dump().items():
+        setattr(db_driver_number, field, value)
+    db.commit()
+    db.refresh(db_driver_number)
+    return db_driver_number
+
+
+@app.delete("/driver-numbers/{driver_id}/{season}", status_code=204)
+def delete_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)):
+    db_driver_number = db.get(models.DriverNumber, (driver_id, season))
+    if db_driver_number is None:
+        raise HTTPException(status_code=404, detail="Driver number not found")
+    db.delete(db_driver_number)
     db.commit()
 
 
