@@ -27,6 +27,8 @@ TEAMS = [
     {"name": "Kick Sauber", "country": "Switzerland", "founded_year": 1970},
     {"name": "AlphaTauri", "country": "Italy", "founded_year": 2020},
     {"name": "Alfa Romeo", "country": "Switzerland", "founded_year": 2019},
+    {"name": "Renault", "country": "France", "founded_year": 2016},
+    {"name": "Racing Point", "country": "United Kingdom", "founded_year": 2018},
 ]
 
 # (name, nationality, date_of_birth)
@@ -64,6 +66,8 @@ DRIVERS = [
     ("Kimi Raikkonen", "Finland", date(1979, 10, 17)),
     ("Antonio Giovinazzi", "Italy", date(1993, 12, 14)),
     ("Nikita Mazepin", "Russia", date(1999, 3, 2)),
+    ("Daniil Kvyat", "Russia", date(1994, 4, 26)),
+    ("Romain Grosjean", "France", date(1986, 4, 17)),
 ]
 
 # (driver_name, season, number)
@@ -178,6 +182,27 @@ DRIVER_NUMBERS = [
     ("Antonio Giovinazzi", 2021, 99),
     ("Mick Schumacher", 2021, 47),
     ("Nikita Mazepin", 2021, 9),
+    # 2020
+    ("Lewis Hamilton", 2020, 44),
+    ("Valtteri Bottas", 2020, 77),
+    ("Max Verstappen", 2020, 1),
+    ("Alex Albon", 2020, 23),
+    ("Charles Leclerc", 2020, 16),
+    ("Sebastian Vettel", 2020, 5),
+    ("Lando Norris", 2020, 4),
+    ("Carlos Sainz", 2020, 55),
+    ("Daniel Ricciardo", 2020, 3),
+    ("Esteban Ocon", 2020, 31),
+    ("Sergio Perez", 2020, 11),
+    ("Lance Stroll", 2020, 18),
+    ("Pierre Gasly", 2020, 10),
+    ("Daniil Kvyat", 2020, 26),
+    ("Kimi Raikkonen", 2020, 7),
+    ("Antonio Giovinazzi", 2020, 99),
+    ("Kevin Magnussen", 2020, 20),
+    ("Romain Grosjean", 2020, 8),
+    ("George Russell", 2020, 63),
+    ("Nicholas Latifi", 2020, 6),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -305,6 +330,25 @@ GRANDS_PRIX = {
         (20, "Qatar Grand Prix", "Lusail International Circuit", "Lewis Hamilton", "Mercedes"),
         (21, "Saudi Arabian Grand Prix", "Jeddah Corniche Circuit", "Lewis Hamilton", "Mercedes"),
         (22, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Max Verstappen", "Red Bull Racing"),
+    ],
+    2020: [
+        (1, "Austrian Grand Prix", "Red Bull Ring", "Valtteri Bottas", "Mercedes"),
+        (2, "Styrian Grand Prix", "Red Bull Ring", "Lewis Hamilton", "Mercedes"),
+        (3, "Hungarian Grand Prix", "Hungaroring", "Lewis Hamilton", "Mercedes"),
+        (4, "British Grand Prix", "Silverstone Circuit", "Lewis Hamilton", "Mercedes"),
+        (5, "70th Anniversary Grand Prix", "Silverstone Circuit", "Max Verstappen", "Red Bull Racing"),
+        (6, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Lewis Hamilton", "Mercedes"),
+        (7, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Lewis Hamilton", "Mercedes"),
+        (8, "Italian Grand Prix", "Autodromo Nazionale Monza", "Pierre Gasly", "AlphaTauri"),
+        (9, "Tuscan Grand Prix", "Mugello Circuit", "Lewis Hamilton", "Mercedes"),
+        (10, "Russian Grand Prix", "Sochi Autodrom", "Valtteri Bottas", "Mercedes"),
+        (11, "Eifel Grand Prix", "Nurburgring", "Lewis Hamilton", "Mercedes"),
+        (12, "Portuguese Grand Prix", "Autodromo Internacional do Algarve", "Lewis Hamilton", "Mercedes"),
+        (13, "Emilia Romagna Grand Prix", "Autodromo Enzo e Dino Ferrari", "Lewis Hamilton", "Mercedes"),
+        (14, "Turkish Grand Prix", "Istanbul Park", "Lewis Hamilton", "Mercedes"),
+        (15, "Bahrain Grand Prix", "Bahrain International Circuit", "Lewis Hamilton", "Mercedes"),
+        (16, "Sakhir Grand Prix", "Bahrain International Circuit", "Sergio Perez", "Racing Point"),
+        (17, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Max Verstappen", "Red Bull Racing"),
     ],
 }
 
