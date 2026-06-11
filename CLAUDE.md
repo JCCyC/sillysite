@@ -4,10 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a minimal static website used for testing website deployment. The entire site is a single
-self-contained `index.html` file (no build step, no dependencies, no tests).
+This is a minimal FastAPI app used for testing website deployment. All routes live in `main.py`.
 
-## Working with this repo
+## Commands
 
-- Edit `index.html` directly — all markup, styles, and content live in that one file.
-- To preview, open `index.html` in a browser (no server or build process required).
+- Install dependencies: `pip install -r requirements.txt`
+- Run the dev server: `uvicorn main:app --reload`
+
+## Architecture
+
+- `main.py` defines the FastAPI app and its endpoints (`/` and `/about`), each returning
+  `{"msg": "<random message>"}` chosen from a small list of candidate messages.
