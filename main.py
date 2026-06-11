@@ -13,17 +13,29 @@ app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
 HOME_MESSAGES = [
-    "Welcome to the silly site!",
-    "Hello, world!",
-    "You found the home page.",
-    "Glad you're here.",
+    "Lights out and away we go!",
+    "Welcome to the pit lane.",
+    "Box, box, box.",
+    "DRS enabled.",
+    "It's hammer time.",
+    "Gap to the car ahead: closing.",
+    "Push push push!",
+    "Undercut secured.",
+    "Purple sector one.",
+    "Checkered flag incoming.",
 ]
 
 ABOUT_MESSAGES = [
-    "This site is powered by FastAPI.",
-    "We're a small but mighty test project.",
-    "About page, at your service.",
-    "Built for fun, deployed for science.",
+    "This site is powered by FastAPI and Formula One.",
+    "We're a small but mighty pit crew of a project.",
+    "About page, fueled by high-octane data.",
+    "Built for fun, deployed at race pace.",
+    "Tracking grids, grands prix, and glory since lap one.",
+    "Every endpoint is a victory lap.",
+    "No blue flags here, just smooth racing.",
+    "Powered by a hybrid of FastAPI and PostgreSQL.",
+    "Strategy: undercut the competition.",
+    "From pole position to the chequered flag.",
 ]
 
 
