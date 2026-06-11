@@ -37,7 +37,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 - `schemas.py` defines the Pydantic request/response models used by the CRUD endpoints,
   including `*Create` schemas (all fields required, used for `POST`) and `*Update` schemas
   (all fields optional, used for `PUT` partial updates).
-- `seed.py` is a one-off script that populates the database with 2025 Formula One season data
-  (run with `.venv/bin/python seed.py`).
+- `seed.py` is a one-off script that populates the database with Formula One season data from
+  2014 through 2025 (run with `.venv/bin/python seed.py`).
 - `postman_collection.json` is a Postman collection covering all endpoints, with `base_url` and
   `api_key` collection variables for testing the API.
