@@ -33,6 +33,8 @@ TEAMS = [
     {"name": "Force India", "country": "India", "founded_year": 2008},
     {"name": "Sauber", "country": "Switzerland", "founded_year": 1993},
     {"name": "Manor Racing", "country": "United Kingdom", "founded_year": 2016},
+    {"name": "Lotus F1", "country": "United Kingdom", "founded_year": 2012},
+    {"name": "Manor Marussia", "country": "United Kingdom", "founded_year": 2015},
 ]
 
 # (name, nationality, date_of_birth)
@@ -84,6 +86,10 @@ DRIVERS = [
     ("Jenson Button", "United Kingdom", date(1980, 1, 19)),
     ("Esteban Gutierrez", "Mexico", date(1991, 8, 5)),
     ("Rio Haryanto", "Indonesia", date(1993, 1, 22)),
+    ("Pastor Maldonado", "Venezuela", date(1985, 3, 9)),
+    ("Felipe Nasr", "Brazil", date(1992, 8, 21)),
+    ("Will Stevens", "United Kingdom", date(1992, 4, 13)),
+    ("Roberto Merhi", "Spain", date(1991, 3, 22)),
 ]
 
 # (driver_name, season, number)
@@ -303,6 +309,27 @@ DRIVER_NUMBERS = [
     ("Esteban Gutierrez", 2016, 21),
     ("Pascal Wehrlein", 2016, 94),
     ("Rio Haryanto", 2016, 88),
+    # 2015
+    ("Lewis Hamilton", 2015, 44),
+    ("Nico Rosberg", 2015, 6),
+    ("Sebastian Vettel", 2015, 5),
+    ("Kimi Raikkonen", 2015, 7),
+    ("Valtteri Bottas", 2015, 77),
+    ("Felipe Massa", 2015, 19),
+    ("Daniel Ricciardo", 2015, 3),
+    ("Daniil Kvyat", 2015, 26),
+    ("Sergio Perez", 2015, 11),
+    ("Nico Hulkenberg", 2015, 27),
+    ("Romain Grosjean", 2015, 8),
+    ("Pastor Maldonado", 2015, 13),
+    ("Max Verstappen", 2015, 33),
+    ("Carlos Sainz", 2015, 55),
+    ("Marcus Ericsson", 2015, 9),
+    ("Felipe Nasr", 2015, 12),
+    ("Fernando Alonso", 2015, 14),
+    ("Jenson Button", 2015, 22),
+    ("Will Stevens", 2015, 28),
+    ("Roberto Merhi", 2015, 98),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -540,6 +567,27 @@ GRANDS_PRIX = {
         (19, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Lewis Hamilton", "Mercedes"),
         (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Lewis Hamilton", "Mercedes"),
         (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
+    ],
+    2015: [
+        (1, "Australian Grand Prix", "Albert Park Circuit", "Lewis Hamilton", "Mercedes"),
+        (2, "Malaysian Grand Prix", "Sepang International Circuit", "Sebastian Vettel", "Ferrari"),
+        (3, "Chinese Grand Prix", "Shanghai International Circuit", "Lewis Hamilton", "Mercedes"),
+        (4, "Bahrain Grand Prix", "Bahrain International Circuit", "Lewis Hamilton", "Mercedes"),
+        (5, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Lewis Hamilton", "Mercedes"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Nico Rosberg", "Mercedes"),
+        (7, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Lewis Hamilton", "Mercedes"),
+        (8, "Austrian Grand Prix", "Red Bull Ring", "Nico Rosberg", "Mercedes"),
+        (9, "British Grand Prix", "Silverstone Circuit", "Lewis Hamilton", "Mercedes"),
+        (10, "Hungarian Grand Prix", "Hungaroring", "Sebastian Vettel", "Ferrari"),
+        (11, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Lewis Hamilton", "Mercedes"),
+        (12, "Italian Grand Prix", "Autodromo Nazionale Monza", "Lewis Hamilton", "Mercedes"),
+        (13, "Singapore Grand Prix", "Marina Bay Street Circuit", "Sebastian Vettel", "Ferrari"),
+        (14, "Japanese Grand Prix", "Suzuka Circuit", "Lewis Hamilton", "Mercedes"),
+        (15, "Russian Grand Prix", "Sochi Autodrom", "Lewis Hamilton", "Mercedes"),
+        (16, "United States Grand Prix", "Circuit of the Americas", "Lewis Hamilton", "Mercedes"),
+        (17, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Nico Rosberg", "Mercedes"),
+        (18, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Nico Rosberg", "Mercedes"),
+        (19, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
     ],
 }
 
