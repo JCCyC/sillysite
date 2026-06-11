@@ -29,6 +29,7 @@ TEAMS = [
     {"name": "Alfa Romeo", "country": "Switzerland", "founded_year": 2019},
     {"name": "Renault", "country": "France", "founded_year": 2016},
     {"name": "Racing Point", "country": "United Kingdom", "founded_year": 2018},
+    {"name": "Toro Rosso", "country": "Italy", "founded_year": 2006},
 ]
 
 # (name, nationality, date_of_birth)
@@ -68,6 +69,7 @@ DRIVERS = [
     ("Nikita Mazepin", "Russia", date(1999, 3, 2)),
     ("Daniil Kvyat", "Russia", date(1994, 4, 26)),
     ("Romain Grosjean", "France", date(1986, 4, 17)),
+    ("Robert Kubica", "Poland", date(1984, 12, 7)),
 ]
 
 # (driver_name, season, number)
@@ -185,7 +187,7 @@ DRIVER_NUMBERS = [
     # 2020
     ("Lewis Hamilton", 2020, 44),
     ("Valtteri Bottas", 2020, 77),
-    ("Max Verstappen", 2020, 1),
+    ("Max Verstappen", 2020, 33),
     ("Alex Albon", 2020, 23),
     ("Charles Leclerc", 2020, 16),
     ("Sebastian Vettel", 2020, 5),
@@ -203,6 +205,27 @@ DRIVER_NUMBERS = [
     ("Romain Grosjean", 2020, 8),
     ("George Russell", 2020, 63),
     ("Nicholas Latifi", 2020, 6),
+    # 2019
+    ("Lewis Hamilton", 2019, 44),
+    ("Valtteri Bottas", 2019, 77),
+    ("Sebastian Vettel", 2019, 5),
+    ("Charles Leclerc", 2019, 16),
+    ("Max Verstappen", 2019, 33),
+    ("Pierre Gasly", 2019, 10),
+    ("Lando Norris", 2019, 4),
+    ("Carlos Sainz", 2019, 55),
+    ("Daniel Ricciardo", 2019, 3),
+    ("Nico Hulkenberg", 2019, 27),
+    ("Alex Albon", 2019, 23),
+    ("Daniil Kvyat", 2019, 26),
+    ("Sergio Perez", 2019, 11),
+    ("Lance Stroll", 2019, 18),
+    ("Kimi Raikkonen", 2019, 7),
+    ("Antonio Giovinazzi", 2019, 99),
+    ("Kevin Magnussen", 2019, 20),
+    ("Romain Grosjean", 2019, 8),
+    ("George Russell", 2019, 63),
+    ("Robert Kubica", 2019, 88),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -349,6 +372,29 @@ GRANDS_PRIX = {
         (15, "Bahrain Grand Prix", "Bahrain International Circuit", "Lewis Hamilton", "Mercedes"),
         (16, "Sakhir Grand Prix", "Bahrain International Circuit", "Sergio Perez", "Racing Point"),
         (17, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Max Verstappen", "Red Bull Racing"),
+    ],
+    2019: [
+        (1, "Australian Grand Prix", "Albert Park Circuit", "Valtteri Bottas", "Mercedes"),
+        (2, "Bahrain Grand Prix", "Bahrain International Circuit", "Lewis Hamilton", "Mercedes"),
+        (3, "Chinese Grand Prix", "Shanghai International Circuit", "Lewis Hamilton", "Mercedes"),
+        (4, "Azerbaijan Grand Prix", "Baku City Circuit", "Valtteri Bottas", "Mercedes"),
+        (5, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Lewis Hamilton", "Mercedes"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Lewis Hamilton", "Mercedes"),
+        (7, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Lewis Hamilton", "Mercedes"),
+        (8, "French Grand Prix", "Circuit Paul Ricard", "Lewis Hamilton", "Mercedes"),
+        (9, "Austrian Grand Prix", "Red Bull Ring", "Max Verstappen", "Red Bull Racing"),
+        (10, "British Grand Prix", "Silverstone Circuit", "Lewis Hamilton", "Mercedes"),
+        (11, "German Grand Prix", "Hockenheimring", "Max Verstappen", "Red Bull Racing"),
+        (12, "Hungarian Grand Prix", "Hungaroring", "Lewis Hamilton", "Mercedes"),
+        (13, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Charles Leclerc", "Ferrari"),
+        (14, "Italian Grand Prix", "Autodromo Nazionale Monza", "Charles Leclerc", "Ferrari"),
+        (15, "Singapore Grand Prix", "Marina Bay Street Circuit", "Sebastian Vettel", "Ferrari"),
+        (16, "Russian Grand Prix", "Sochi Autodrom", "Lewis Hamilton", "Mercedes"),
+        (17, "Japanese Grand Prix", "Suzuka Circuit", "Valtteri Bottas", "Mercedes"),
+        (18, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Lewis Hamilton", "Mercedes"),
+        (19, "United States Grand Prix", "Circuit of the Americas", "Valtteri Bottas", "Mercedes"),
+        (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Max Verstappen", "Red Bull Racing"),
+        (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
     ],
 }
 
