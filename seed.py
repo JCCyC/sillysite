@@ -30,6 +30,8 @@ TEAMS = [
     {"name": "Renault", "country": "France", "founded_year": 2016},
     {"name": "Racing Point", "country": "United Kingdom", "founded_year": 2018},
     {"name": "Toro Rosso", "country": "Italy", "founded_year": 2006},
+    {"name": "Force India", "country": "India", "founded_year": 2008},
+    {"name": "Sauber", "country": "Switzerland", "founded_year": 1993},
 ]
 
 # (name, nationality, date_of_birth)
@@ -70,6 +72,10 @@ DRIVERS = [
     ("Daniil Kvyat", "Russia", date(1994, 4, 26)),
     ("Romain Grosjean", "France", date(1986, 4, 17)),
     ("Robert Kubica", "Poland", date(1984, 12, 7)),
+    ("Sergey Sirotkin", "Russia", date(1995, 8, 27)),
+    ("Brendon Hartley", "New Zealand", date(1989, 11, 10)),
+    ("Stoffel Vandoorne", "Belgium", date(1992, 3, 26)),
+    ("Marcus Ericsson", "Sweden", date(1990, 9, 2)),
 ]
 
 # (driver_name, season, number)
@@ -226,6 +232,27 @@ DRIVER_NUMBERS = [
     ("Romain Grosjean", 2019, 8),
     ("George Russell", 2019, 63),
     ("Robert Kubica", 2019, 88),
+    # 2018
+    ("Lewis Hamilton", 2018, 44),
+    ("Valtteri Bottas", 2018, 77),
+    ("Sebastian Vettel", 2018, 5),
+    ("Kimi Raikkonen", 2018, 7),
+    ("Max Verstappen", 2018, 33),
+    ("Daniel Ricciardo", 2018, 3),
+    ("Sergio Perez", 2018, 11),
+    ("Esteban Ocon", 2018, 31),
+    ("Lance Stroll", 2018, 18),
+    ("Sergey Sirotkin", 2018, 35),
+    ("Nico Hulkenberg", 2018, 27),
+    ("Carlos Sainz", 2018, 55),
+    ("Pierre Gasly", 2018, 10),
+    ("Brendon Hartley", 2018, 28),
+    ("Romain Grosjean", 2018, 8),
+    ("Kevin Magnussen", 2018, 20),
+    ("Fernando Alonso", 2018, 14),
+    ("Stoffel Vandoorne", 2018, 2),
+    ("Charles Leclerc", 2018, 16),
+    ("Marcus Ericsson", 2018, 9),
 ]
 
 # season -> list of (sequence_number, name, track_name, winning_driver_name, winning_team_name)
@@ -394,6 +421,29 @@ GRANDS_PRIX = {
         (18, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Lewis Hamilton", "Mercedes"),
         (19, "United States Grand Prix", "Circuit of the Americas", "Valtteri Bottas", "Mercedes"),
         (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Max Verstappen", "Red Bull Racing"),
+        (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
+    ],
+    2018: [
+        (1, "Australian Grand Prix", "Albert Park Circuit", "Sebastian Vettel", "Ferrari"),
+        (2, "Bahrain Grand Prix", "Bahrain International Circuit", "Sebastian Vettel", "Ferrari"),
+        (3, "Chinese Grand Prix", "Shanghai International Circuit", "Daniel Ricciardo", "Red Bull Racing"),
+        (4, "Azerbaijan Grand Prix", "Baku City Circuit", "Lewis Hamilton", "Mercedes"),
+        (5, "Spanish Grand Prix", "Circuit de Barcelona-Catalunya", "Lewis Hamilton", "Mercedes"),
+        (6, "Monaco Grand Prix", "Circuit de Monaco", "Daniel Ricciardo", "Red Bull Racing"),
+        (7, "Canadian Grand Prix", "Circuit Gilles Villeneuve", "Sebastian Vettel", "Ferrari"),
+        (8, "French Grand Prix", "Circuit Paul Ricard", "Lewis Hamilton", "Mercedes"),
+        (9, "Austrian Grand Prix", "Red Bull Ring", "Max Verstappen", "Red Bull Racing"),
+        (10, "British Grand Prix", "Silverstone Circuit", "Sebastian Vettel", "Ferrari"),
+        (11, "German Grand Prix", "Hockenheimring", "Lewis Hamilton", "Mercedes"),
+        (12, "Hungarian Grand Prix", "Hungaroring", "Lewis Hamilton", "Mercedes"),
+        (13, "Belgian Grand Prix", "Circuit de Spa-Francorchamps", "Sebastian Vettel", "Ferrari"),
+        (14, "Italian Grand Prix", "Autodromo Nazionale Monza", "Lewis Hamilton", "Mercedes"),
+        (15, "Singapore Grand Prix", "Marina Bay Street Circuit", "Lewis Hamilton", "Mercedes"),
+        (16, "Russian Grand Prix", "Sochi Autodrom", "Lewis Hamilton", "Mercedes"),
+        (17, "Japanese Grand Prix", "Suzuka Circuit", "Lewis Hamilton", "Mercedes"),
+        (18, "United States Grand Prix", "Circuit of the Americas", "Kimi Raikkonen", "Ferrari"),
+        (19, "Mexican Grand Prix", "Autodromo Hermanos Rodriguez", "Max Verstappen", "Red Bull Racing"),
+        (20, "Brazilian Grand Prix", "Autodromo Jose Carlos Pace", "Lewis Hamilton", "Mercedes"),
         (21, "Abu Dhabi Grand Prix", "Yas Marina Circuit", "Lewis Hamilton", "Mercedes"),
     ],
 }
