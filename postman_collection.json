@@ -20,6 +20,7 @@
       "item": [
         {
           "name": "Home",
+          "description": "Redirects to /login.html.",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/"

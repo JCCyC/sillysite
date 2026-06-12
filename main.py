@@ -104,7 +104,17 @@ def _session_cleanup_loop():
 
 threading.Thread(target=_session_cleanup_loop, daemon=True).start()
 
-HOME_MESSAGES = [
+ABOUT_MESSAGES = [
+    "This site is powered by FastAPI and Formula One.",
+    "We're a small but mighty pit crew of a project.",
+    "About page, fueled by high-octane data.",
+    "Built for fun, deployed at race pace.",
+    "Tracking grids, grands prix, and glory since lap one.",
+    "Every endpoint is a victory lap.",
+    "No blue flags here, just smooth racing.",
+    "Powered by a hybrid of FastAPI and PostgreSQL.",
+    "Strategy: undercut the competition.",
+    "From pole position to the chequered flag.",
     "Lights out and away we go!",
     "Welcome to the pit lane.",
     "Box, box, box.",
@@ -117,23 +127,10 @@ HOME_MESSAGES = [
     "Checkered flag incoming.",
 ]
 
-ABOUT_MESSAGES = [
-    "This site is powered by FastAPI and Formula One.",
-    "We're a small but mighty pit crew of a project.",
-    "About page, fueled by high-octane data.",
-    "Built for fun, deployed at race pace.",
-    "Tracking grids, grands prix, and glory since lap one.",
-    "Every endpoint is a victory lap.",
-    "No blue flags here, just smooth racing.",
-    "Powered by a hybrid of FastAPI and PostgreSQL.",
-    "Strategy: undercut the competition.",
-    "From pole position to the chequered flag.",
-]
 
-
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def read_root():
-    return {"msg": random.choice(HOME_MESSAGES)}
+    return RedirectResponse("/login.html")
 
 
 @app.get("/favicon.ico", include_in_schema=False)
