@@ -572,11 +572,11 @@ def logout(
 
 @app.get(
     "/config",
-    response_model=list[schemas.AppConfig],
+    response_model=dict[str, str],
     dependencies=[Depends(require_admin)],
 )
 def list_config(db: Session = Depends(get_db)):
-    return db.query(models.AppConfig).all()
+    return {row.key: row.value for row in db.query(models.AppConfig).all()}
 
 
 # --- Active Users ---

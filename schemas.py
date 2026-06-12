@@ -93,13 +93,6 @@ class GrandPrix(GrandPrixBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AppConfig(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    key: str
-    value: str
-
-
 class UserCreate(BaseModel):
     username: str
     full_name: str

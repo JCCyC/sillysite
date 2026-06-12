@@ -11,7 +11,7 @@ A FastAPI app with:
 - A `/whoami` endpoint returning information about the logged-in user and their session
 - A `/logout` endpoint that invalidates the current session and returns a confirmation message
   (fails for the static `API_KEY`)
-- A `/config` endpoint (admin-only) listing the `app_config` settings
+- A `/config` endpoint (admin-only) returning the `app_config` settings as a key/value object
 - An `/activeusers` endpoint (admin-only) listing active sessions: username, source IP, login
   time, and expiry time
 - A `/login.html` page implementing the login flow in the browser
