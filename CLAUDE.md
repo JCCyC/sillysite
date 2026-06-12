@@ -46,10 +46,12 @@ prepare commits locally and let the user push manually.
   `/login.html` page, a `/whoami.html` page, a `/changepw.html` page, and serves
   `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
-  `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
-  are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
-  if missing. A background daemon thread also wakes up every 15 minutes and deletes any rows in
-  `sessions` whose `expires_at` is more than an hour in the past.
+  `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`,
+  `session_cleanup_interval_seconds`, `session_cleanup_grace_seconds`) are inserted if missing,
+  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing. A background
+  daemon thread also wakes up every `session_cleanup_interval_seconds` (`app_config`, default 15
+  minutes) and deletes any rows in `sessions` whose `expires_at` is more than
+  `session_cleanup_grace_seconds` (`app_config`, default 1 hour) in the past.
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, `/whoami.html`, and `/changepw.html`

@@ -25,6 +25,8 @@ DEFAULT_CONFIG = {
     "session_ttl_seconds": auth.DEFAULT_SESSION_TTL_SECONDS,
     "login_timeout_seconds": auth.DEFAULT_LOGIN_TIMEOUT_SECONDS,
     "change_pw_timeout_seconds": auth.DEFAULT_CHANGE_PW_TIMEOUT_SECONDS,
+    "session_cleanup_interval_seconds": auth.DEFAULT_SESSION_CLEANUP_INTERVAL_SECONDS,
+    "session_cleanup_grace_seconds": auth.DEFAULT_SESSION_CLEANUP_GRACE_SECONDS,
 }
 
 
@@ -82,14 +84,11 @@ def _ensure_admin_user():
 _ensure_default_config()
 _ensure_admin_user()
 
-SESSION_CLEANUP_INTERVAL_SECONDS = 15 * 60
-SESSION_CLEANUP_GRACE_SECONDS = 60 * 60
-
-
 def _cleanup_expired_sessions():
     db = SessionLocal()
     try:
-        cutoff = datetime.now(timezone.utc) - timedelta(seconds=SESSION_CLEANUP_GRACE_SECONDS)
+        grace_seconds = _get_config_int(db, "session_cleanup_grace_seconds")
+        cutoff = datetime.now(timezone.utc) - timedelta(seconds=grace_seconds)
         db.query(models.UserSession).filter(models.UserSession.expires_at < cutoff).delete()
         db.commit()
     finally:
@@ -99,7 +98,12 @@ def _cleanup_expired_sessions():
 def _session_cleanup_loop():
     while True:
         _cleanup_expired_sessions()
-        time.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
+        db = SessionLocal()
+        try:
+            interval_seconds = _get_config_int(db, "session_cleanup_interval_seconds")
+        finally:
+            db.close()
+        time.sleep(interval_seconds)
 
 
 threading.Thread(target=_session_cleanup_loop, daemon=True).start()
