@@ -621,7 +621,7 @@ def login_response(
         .first()
     )
 
-    invalid = HTTPException(status_code=403, detail="Invalid username, password, or challenge")
+    invalid = HTTPException(status_code=403, detail="Invalid username or password")
 
     if session is None:
         raise invalid
