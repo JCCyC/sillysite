@@ -70,8 +70,10 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 2. The client derives `key = PBKDF2-HMAC-SHA256(password, salt, iterations)` and computes
    `response = HMAC-SHA256(key, challenge)`.
 3. `POST /login/response` with `{"username", "challenge", "response"}` returns
-   `{"token", "expires_at"}` on success (the challenge is single-use), or `403` on any failure
-   (unknown user, expired/used challenge, wrong response).
+   `{"token", "expires_at"}` on success (the challenge is single-use), or `403` on any failure:
+   `"Login timeout"` if more than `login_timeout_seconds` (`app_config`, default 60) elapsed
+   since the challenge was issued, or a generic `"Invalid username, password, or challenge"`
+   for any other failure (unknown user, reused challenge, wrong response).
 4. The returned `token` can be used as the `X-API-Key` header value, but only from the source IP
    it was issued to, and only until `expires_at`. What it grants access to depends on the user's
    `is_admin` flag (see access control above).

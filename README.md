@@ -28,6 +28,9 @@ After an admin creates a user via `POST /users`, that user can obtain a session 
 Password:
 ```
 
+If more than `login_timeout_seconds` (`app_config`, default 60) elapse between requesting the
+challenge and submitting the response, the login fails with "Login timeout".
+
 On success, the token is printed to stdout and can be used as the `X-API-Key` header. The token
 is only valid from the IP address it was issued to, and expires after `session_ttl_seconds`
 (1 hour by default, configurable in the `app_config` table).

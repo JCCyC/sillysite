@@ -18,19 +18,26 @@ app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
 
+DEFAULT_CONFIG = {
+    "session_ttl_seconds": auth.DEFAULT_SESSION_TTL_SECONDS,
+    "login_timeout_seconds": auth.DEFAULT_LOGIN_TIMEOUT_SECONDS,
+}
+
+
 def _ensure_default_config():
     db = SessionLocal()
     try:
-        if db.get(models.AppConfig, "session_ttl_seconds") is None:
-            db.add(
-                models.AppConfig(
-                    key="session_ttl_seconds",
-                    value=str(auth.DEFAULT_SESSION_TTL_SECONDS),
-                )
-            )
-            db.commit()
+        for key, default_value in DEFAULT_CONFIG.items():
+            if db.get(models.AppConfig, key) is None:
+                db.add(models.AppConfig(key=key, value=str(default_value)))
+        db.commit()
     finally:
         db.close()
+
+
+def _get_config_int(db: Session, key: str) -> int:
+    config_row = db.get(models.AppConfig, key)
+    return int(config_row.value) if config_row else DEFAULT_CONFIG[key]
 
 
 def _ensure_admin_user():
@@ -480,12 +487,13 @@ def login_challenge(
         iterations = auth.PBKDF2_ITERATIONS
 
     now = datetime.now(timezone.utc)
+    login_timeout_seconds = _get_config_int(db, "login_timeout_seconds")
     session = models.UserSession(
         user_id=user.id if user is not None else None,
         challenge=auth.generate_challenge(),
         source_ip=auth.client_ip(request),
         created_at=now,
-        expires_at=now + timedelta(seconds=auth.CHALLENGE_TTL_SECONDS),
+        expires_at=now + timedelta(seconds=login_timeout_seconds),
     )
     db.add(session)
     db.commit()
@@ -518,7 +526,9 @@ def login_response(
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < now:
-        raise invalid
+        session.used = True
+        db.commit()
+        raise HTTPException(status_code=403, detail="Login timeout")
 
     session.used = True
 
@@ -532,8 +542,7 @@ def login_response(
         db.commit()
         raise invalid
 
-    config_row = db.get(models.AppConfig, "session_ttl_seconds")
-    ttl_seconds = int(config_row.value) if config_row else auth.DEFAULT_SESSION_TTL_SECONDS
+    ttl_seconds = _get_config_int(db, "session_ttl_seconds")
 
     session.token = auth.generate_token()
     session.source_ip = auth.client_ip(request)
