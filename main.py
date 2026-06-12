@@ -1,5 +1,7 @@
 import random
 import secrets
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -78,6 +80,28 @@ def _ensure_admin_user():
 
 _ensure_default_config()
 _ensure_admin_user()
+
+SESSION_CLEANUP_INTERVAL_SECONDS = 15 * 60
+SESSION_CLEANUP_GRACE_SECONDS = 60 * 60
+
+
+def _cleanup_expired_sessions():
+    db = SessionLocal()
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(seconds=SESSION_CLEANUP_GRACE_SECONDS)
+        db.query(models.UserSession).filter(models.UserSession.expires_at < cutoff).delete()
+        db.commit()
+    finally:
+        db.close()
+
+
+def _session_cleanup_loop():
+    while True:
+        time.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
+        _cleanup_expired_sessions()
+
+
+threading.Thread(target=_session_cleanup_loop, daemon=True).start()
 
 HOME_MESSAGES = [
     "Lights out and away we go!",

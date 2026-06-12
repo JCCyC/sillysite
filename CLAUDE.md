@@ -24,7 +24,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
-  if missing.
+  if missing. A background daemon thread also wakes up every 15 minutes and deletes any rows in
+  `sessions` whose `expires_at` is more than an hour in the past.
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
