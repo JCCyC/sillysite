@@ -102,11 +102,13 @@ class AppConfig(BaseModel):
 
 class UserCreate(BaseModel):
     username: str
+    full_name: str
     password: str
     is_admin: bool = False
 
 
 class UserUpdate(BaseModel):
+    full_name: str | None = None
     password: str | None = None
     is_admin: bool | None = None
 
@@ -116,6 +118,7 @@ class User(BaseModel):
 
     id: int
     username: str
+    full_name: str
     is_admin: bool
     created_at: datetime
 

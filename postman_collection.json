@@ -295,7 +295,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"correcthorsebatterystaple\",\n  \"is_admin\": false\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"full_name\": \"Test User\",\n  \"password\": \"correcthorsebatterystaple\",\n  \"is_admin\": false\n}"
             },
             "url": "{{base_url}}/users"
           }

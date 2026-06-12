@@ -24,6 +24,7 @@ DEFAULT_CHANGE_PW_TIMEOUT_SECONDS = 60
 
 ADMIN_USER_ID = 0
 ADMIN_USERNAME = "admin"
+ADMIN_FULL_NAME = "System Administrator"
 
 
 def hash_password(password: str) -> tuple[str, str, int]:

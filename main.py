@@ -49,23 +49,29 @@ def _ensure_admin_user():
         conn.execute(
             text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS authenticated_at TIMESTAMPTZ")
         )
+        conn.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR NOT NULL DEFAULT ''")
+        )
         conn.commit()
 
     db = SessionLocal()
     try:
-        if db.get(models.User, auth.ADMIN_USER_ID) is None:
+        admin = db.get(models.User, auth.ADMIN_USER_ID)
+        if admin is None:
             salt, password_hash, iterations = auth.hash_password(secrets.token_hex(32))
-            db.add(
-                models.User(
-                    id=auth.ADMIN_USER_ID,
-                    username=auth.ADMIN_USERNAME,
-                    password_salt=salt,
-                    password_hash=password_hash,
-                    password_iterations=iterations,
-                    is_admin=True,
-                )
+            admin = models.User(
+                id=auth.ADMIN_USER_ID,
+                username=auth.ADMIN_USERNAME,
+                full_name=auth.ADMIN_FULL_NAME,
+                password_salt=salt,
+                password_hash=password_hash,
+                password_iterations=iterations,
+                is_admin=True,
             )
-            db.commit()
+            db.add(admin)
+        else:
+            admin.full_name = auth.ADMIN_FULL_NAME
+        db.commit()
     finally:
         db.close()
 
@@ -421,6 +427,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     salt, password_hash, iterations = auth.hash_password(user.password)
     db_user = models.User(
         username=user.username,
+        full_name=user.full_name,
         password_salt=salt,
         password_hash=password_hash,
         password_iterations=iterations,

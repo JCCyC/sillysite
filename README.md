@@ -58,9 +58,10 @@ with the static `.env` `API_KEY` aren't subject to this timeout, since they aren
 
 ## Admin user
 
-A non-removable `admin` user (id `0`) always exists and has `is_admin=True`. Requests made with
-the `.env` `API_KEY` are treated as this user. It can also have its own password set (via
-`PUT /users/admin`) and log in normally — both forms of authentication work independently.
+A non-removable `admin` user (id `0`) always exists, has `is_admin=True`, and a full name of
+"System Administrator". Requests made with the `.env` `API_KEY` are treated as this user. It can
+also have its own password set (via `PUT /users/admin`) and log in normally — both forms of
+authentication work independently.
 
 ## Setup
 

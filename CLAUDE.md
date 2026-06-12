@@ -51,7 +51,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   `GrandPrix`. A `Driver` holds a person's name, nationality, and date of birth; their car number
   for a given season is tracked separately in `DriverNumber` (since drivers can change numbers
   between seasons). `GrandPrix` records the winning driver and team directly (since drivers can
-  change teams mid-season). It also defines `User` (username, `is_admin` flag, plus PBKDF2
+  change teams mid-season). It also defines `User` (username, full name, `is_admin` flag, plus PBKDF2
   salt/hash/iterations — never a plaintext password), `UserSession` (one-time login challenges
   and, once redeemed, the issued token, its expiry, the source IP it's restricted to, and
   `authenticated_at`, the time the token was issued), and `AppConfig` (key/value settings, e.g.
