@@ -29,6 +29,32 @@ as if neither were provided.
 
 A Postman collection covering all endpoints is available in `postman_collection.json`.
 
+## Endpoints
+
+| Endpoint                                  | Methods                  |
+| ------------------------------------------ | ------------------------- |
+| `/`                                        | `GET`                     |
+| `/about`                                   | `GET`                     |
+| `/favicon.ico`                             | `GET`                     |
+| `/login.html`                              | `GET`                     |
+| `/teams`                                   | `GET`, `POST`             |
+| `/teams/{team_id}`                         | `GET`, `PUT`, `DELETE`    |
+| `/drivers`                                 | `GET`, `POST`             |
+| `/drivers/{driver_id}`                     | `GET`, `PUT`, `DELETE`    |
+| `/driver-numbers`                          | `GET`, `POST`             |
+| `/driver-numbers/{driver_id}/{season}`     | `GET`, `PUT`, `DELETE`    |
+| `/grands-prix`                             | `GET`, `POST`             |
+| `/grands-prix/{season}/{sequence_number}`  | `GET`, `PUT`, `DELETE`    |
+| `/users`                                   | `GET`, `POST`             |
+| `/users/{username}`                        | `PUT`, `DELETE`           |
+| `/login/challenge`                         | `POST`                    |
+| `/login/response`                          | `POST`                    |
+| `/change-password`                         | `POST`                    |
+| `/whoami`                                  | `GET`                     |
+| `/logout`                                  | `GET`                     |
+| `/config`                                  | `GET`                     |
+| `/activeusers`                             | `GET`                     |
+
 ## Logging in
 
 After an admin creates a user via `POST /users`, that user can obtain a session token:
