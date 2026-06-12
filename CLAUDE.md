@@ -20,7 +20,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
   `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
-  endpoint, a `/config` endpoint, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
+  endpoint, a `/config` endpoint, an `/activeusers` endpoint, and serves `static/favicon.ico` at
+  `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
@@ -33,8 +34,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
     changes that user's own password, the latter returns information about that user and their
     session.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
-  - Everything else (writes on Formula One data, all of `/users`, and `GET /config`) requires an
-    admin (`require_admin`).
+  - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and
+    `GET /activeusers`) requires an admin (`require_admin`).
 - `auth.py` resolves the caller's `User` from the `X-API-Key` header or an `apikey` query
   parameter (`resolve_api_key`; if both are present, the request is treated as unauthenticated,
   even if they match): either the static key matching `config.API_KEY` (which maps to the `admin`

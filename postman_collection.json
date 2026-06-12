@@ -373,6 +373,24 @@
       ]
     },
     {
+      "name": "Active Users",
+      "item": [
+        {
+          "name": "List Active Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/activeusers"
+          }
+        }
+      ]
+    },
+    {
       "name": "Login",
       "description": "Computing the challenge response requires PBKDF2-HMAC-SHA256, which isn't available in Postman's sandbox. Use `./login.py <base_url> <username>` to actually log in; these requests are included for reference.",
       "item": [

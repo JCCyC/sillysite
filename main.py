@@ -530,6 +530,32 @@ def list_config(db: Session = Depends(get_db)):
     return db.query(models.AppConfig).all()
 
 
+# --- Active Users ---
+
+
+@app.get(
+    "/activeusers",
+    response_model=list[schemas.ActiveUser],
+    dependencies=[Depends(require_admin)],
+)
+def list_active_users(db: Session = Depends(get_db)):
+    now = datetime.now(timezone.utc)
+    sessions = (
+        db.query(models.UserSession)
+        .filter(models.UserSession.token.isnot(None), models.UserSession.expires_at > now)
+        .all()
+    )
+    return [
+        schemas.ActiveUser(
+            username=session.user.username,
+            source_ip=session.source_ip,
+            login_at=session.authenticated_at,
+            expires_at=session.expires_at,
+        )
+        for session in sessions
+    ]
+
+
 # --- Login ---
 
 

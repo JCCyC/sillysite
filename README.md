@@ -9,6 +9,8 @@ A FastAPI app with:
   endpoint
 - A `/whoami` endpoint returning information about the logged-in user and their session
 - A `/config` endpoint (admin-only) listing the `app_config` settings
+- An `/activeusers` endpoint (admin-only) listing active sessions: username, source IP, login
+  time, and expiry time
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,

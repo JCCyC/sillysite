@@ -128,6 +128,13 @@ class WhoAmI(User):
     session_expires_at: datetime | None = None
 
 
+class ActiveUser(BaseModel):
+    username: str
+    source_ip: str
+    login_at: datetime | None
+    expires_at: datetime
+
+
 class LoginChallengeRequest(BaseModel):
     username: str
 
