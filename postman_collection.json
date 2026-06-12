@@ -264,6 +264,98 @@
       ]
     },
     {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"correcthorsebatterystaple\"\n}"
+            },
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/users/testuser"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login",
+      "description": "Computing the challenge response requires PBKDF2-HMAC-SHA256, which isn't available in Postman's sandbox. Use `./login.py <base_url> <username>` to actually log in; these requests are included for reference.",
+      "item": [
+        {
+          "name": "Get Challenge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\"\n}"
+            },
+            "url": "{{base_url}}/login/challenge"
+          }
+        },
+        {
+          "name": "Submit Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"challenge\": \"<challenge from Get Challenge>\",\n  \"response\": \"<HMAC-SHA256(PBKDF2-HMAC-SHA256(password, salt, iterations), challenge)>\"\n}"
+            },
+            "url": "{{base_url}}/login/response"
+          }
+        }
+      ]
+    },
+    {
       "name": "Grands Prix",
       "item": [
         {

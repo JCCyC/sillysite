@@ -1,17 +1,38 @@
 import random
+import secrets
+from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+import auth
 import models
 import schemas
 from auth import require_api_key
-from database import engine, get_db
+from database import SessionLocal, engine, get_db
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
+
+
+def _ensure_default_config():
+    db = SessionLocal()
+    try:
+        if db.get(models.AppConfig, "session_ttl_seconds") is None:
+            db.add(
+                models.AppConfig(
+                    key="session_ttl_seconds",
+                    value=str(auth.DEFAULT_SESSION_TTL_SECONDS),
+                )
+            )
+            db.commit()
+    finally:
+        db.close()
+
+
+_ensure_default_config()
 
 HOME_MESSAGES = [
     "Lights out and away we go!",
@@ -305,3 +326,132 @@ def delete_grand_prix(season: int, sequence_number: int, db: Session = Depends(g
         raise HTTPException(status_code=404, detail="Grand Prix not found")
     db.delete(db_gp)
     db.commit()
+
+
+# --- Users ---
+
+
+@app.get(
+    "/users",
+    response_model=list[schemas.User],
+    dependencies=[Depends(require_api_key)],
+)
+def list_users(db: Session = Depends(get_db)):
+    return db.query(models.User).all()
+
+
+@app.post(
+    "/users",
+    response_model=schemas.User,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    if db.query(models.User).filter(models.User.username == user.username).first():
+        raise HTTPException(status_code=409, detail="Username already exists")
+    salt, password_hash, iterations = auth.hash_password(user.password)
+    db_user = models.User(
+        username=user.username,
+        password_salt=salt,
+        password_hash=password_hash,
+        password_iterations=iterations,
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+@app.delete(
+    "/users/{username}",
+    status_code=204,
+    dependencies=[Depends(require_api_key)],
+)
+def delete_user(username: str, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.username == username).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(db_user)
+    db.commit()
+
+
+# --- Login ---
+
+
+@app.post("/login/challenge", response_model=schemas.LoginChallengeResponse)
+def login_challenge(
+    body: schemas.LoginChallengeRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user = db.query(models.User).filter(models.User.username == body.username).first()
+
+    if user is not None:
+        salt, iterations = user.password_salt, user.password_iterations
+    else:
+        # Keep the response shape consistent for unknown usernames.
+        salt = secrets.token_hex(auth.SALT_BYTES)
+        iterations = auth.PBKDF2_ITERATIONS
+
+    now = datetime.now(timezone.utc)
+    session = models.UserSession(
+        user_id=user.id if user is not None else None,
+        challenge=auth.generate_challenge(),
+        source_ip=auth.client_ip(request),
+        created_at=now,
+        expires_at=now + timedelta(seconds=auth.CHALLENGE_TTL_SECONDS),
+    )
+    db.add(session)
+    db.commit()
+
+    return schemas.LoginChallengeResponse(
+        challenge=session.challenge, salt=salt, iterations=iterations
+    )
+
+
+@app.post("/login/response", response_model=schemas.LoginResponseResponse)
+def login_response(
+    body: schemas.LoginResponseRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+
+    session = (
+        db.query(models.UserSession)
+        .filter(models.UserSession.challenge == body.challenge, models.UserSession.used == False)
+        .first()
+    )
+
+    invalid = HTTPException(status_code=403, detail="Invalid username, password, or challenge")
+
+    if session is None:
+        raise invalid
+
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < now:
+        raise invalid
+
+    session.used = True
+
+    user = session.user
+    if user is None or user.username != body.username:
+        db.commit()
+        raise invalid
+
+    expected = auth.compute_challenge_response(user.password_hash, body.challenge)
+    if not secrets.compare_digest(expected, body.response):
+        db.commit()
+        raise invalid
+
+    config_row = db.get(models.AppConfig, "session_ttl_seconds")
+    ttl_seconds = int(config_row.value) if config_row else auth.DEFAULT_SESSION_TTL_SECONDS
+
+    session.token = auth.generate_token()
+    session.source_ip = auth.client_ip(request)
+    session.expires_at = now + timedelta(seconds=ttl_seconds)
+    db.commit()
+
+    return schemas.LoginResponseResponse(token=session.token, expires_at=session.expires_at)

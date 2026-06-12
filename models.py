@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Date, ForeignKey, Integer, String, UniqueConstraint
+from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -47,3 +49,40 @@ class GrandPrix(Base):
 
     winning_driver = relationship("Driver")
     winning_team = relationship("Team")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    password_salt = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
+    password_iterations = Column(Integer, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class UserSession(Base):
+    __tablename__ = "sessions"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    challenge = Column(String, unique=True, nullable=False, index=True)
+    token = Column(String, unique=True, nullable=True, index=True)
+    source_ip = Column(String, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used = Column(Boolean, nullable=False, default=False)
+
+    user = relationship("User")
+
+
+class AppConfig(Base):
+    __tablename__ = "app_config"
+
+    key = Column(String, primary_key=True)
+    value = Column(String, nullable=False)

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -91,3 +91,37 @@ class GrandPrixUpdate(BaseModel):
 
 class GrandPrix(GrandPrixBase):
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+
+class User(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    created_at: datetime
+
+
+class LoginChallengeRequest(BaseModel):
+    username: str
+
+
+class LoginChallengeResponse(BaseModel):
+    challenge: str
+    salt: str
+    iterations: int
+
+
+class LoginResponseRequest(BaseModel):
+    username: str
+    challenge: str
+    response: str
+
+
+class LoginResponseResponse(BaseModel):
+    token: str
+    expires_at: datetime
