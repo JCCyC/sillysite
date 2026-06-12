@@ -11,7 +11,7 @@ import config
 import models
 from database import get_db
 
-api_key_header = APIKeyHeader(name="X-API-Key")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 PBKDF2_ITERATIONS = 200_000
 SALT_BYTES = 16
@@ -19,6 +19,9 @@ CHALLENGE_BYTES = 32
 TOKEN_BYTES = 32
 CHALLENGE_TTL_SECONDS = 60
 DEFAULT_SESSION_TTL_SECONDS = 3600
+
+ADMIN_USER_ID = 0
+ADMIN_USERNAME = "admin"
 
 
 def hash_password(password: str) -> tuple[str, str, int]:
@@ -48,24 +51,42 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
-def require_api_key(
+def get_current_user(
     request: Request,
-    api_key: str = Security(api_key_header),
+    api_key: str | None = Security(api_key_header),
     db: Session = Depends(get_db),
-) -> None:
+) -> models.User | None:
+    """Resolves the caller's user, or None if unauthenticated."""
+    if api_key is None:
+        return None
+
     if config.API_KEY and secrets.compare_digest(api_key, config.API_KEY):
-        return
+        return db.get(models.User, ADMIN_USER_ID)
 
     session = db.query(models.UserSession).filter(models.UserSession.token == api_key).first()
     if session is None:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+        return None
 
     now = datetime.now(timezone.utc)
     expires_at = session.expires_at
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < now:
-        raise HTTPException(status_code=401, detail="Token expired")
+        return None
 
     if client_ip(request) != session.source_ip:
-        raise HTTPException(status_code=403, detail="Token not valid from this address")
+        return None
+
+    return session.user
+
+
+def require_user(user: models.User | None = Depends(get_current_user)) -> models.User:
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    return user
+
+
+def require_admin(user: models.User = Depends(require_user)) -> models.User:
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    return user

@@ -4,12 +4,13 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 import auth
 import models
 import schemas
-from auth import require_api_key
+from auth import require_admin, require_user
 from database import SessionLocal, engine, get_db
 
 app = FastAPI()
@@ -32,7 +33,34 @@ def _ensure_default_config():
         db.close()
 
 
+def _ensure_admin_user():
+    with engine.connect() as conn:
+        conn.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE")
+        )
+        conn.commit()
+
+    db = SessionLocal()
+    try:
+        if db.get(models.User, auth.ADMIN_USER_ID) is None:
+            salt, password_hash, iterations = auth.hash_password(secrets.token_hex(32))
+            db.add(
+                models.User(
+                    id=auth.ADMIN_USER_ID,
+                    username=auth.ADMIN_USERNAME,
+                    password_salt=salt,
+                    password_hash=password_hash,
+                    password_iterations=iterations,
+                    is_admin=True,
+                )
+            )
+            db.commit()
+    finally:
+        db.close()
+
+
 _ensure_default_config()
+_ensure_admin_user()
 
 HOME_MESSAGES = [
     "Lights out and away we go!",
@@ -79,12 +107,20 @@ def read_about():
 # --- Teams ---
 
 
-@app.get("/teams", response_model=list[schemas.Team])
+@app.get(
+    "/teams",
+    response_model=list[schemas.Team],
+    dependencies=[Depends(require_user)],
+)
 def list_teams(db: Session = Depends(get_db)):
     return db.query(models.Team).all()
 
 
-@app.get("/teams/{team_id}", response_model=schemas.Team)
+@app.get(
+    "/teams/{team_id}",
+    response_model=schemas.Team,
+    dependencies=[Depends(require_user)],
+)
 def get_team(team_id: int, db: Session = Depends(get_db)):
     team = db.get(models.Team, team_id)
     if team is None:
@@ -96,7 +132,7 @@ def get_team(team_id: int, db: Session = Depends(get_db)):
     "/teams",
     response_model=schemas.Team,
     status_code=201,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
     db_team = models.Team(**team.model_dump())
@@ -109,7 +145,7 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
 @app.put(
     "/teams/{team_id}",
     response_model=schemas.Team,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def update_team(team_id: int, team: schemas.TeamUpdate, db: Session = Depends(get_db)):
     db_team = db.get(models.Team, team_id)
@@ -125,7 +161,7 @@ def update_team(team_id: int, team: schemas.TeamUpdate, db: Session = Depends(ge
 @app.delete(
     "/teams/{team_id}",
     status_code=204,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def delete_team(team_id: int, db: Session = Depends(get_db)):
     db_team = db.get(models.Team, team_id)
@@ -138,12 +174,20 @@ def delete_team(team_id: int, db: Session = Depends(get_db)):
 # --- Drivers ---
 
 
-@app.get("/drivers", response_model=list[schemas.Driver])
+@app.get(
+    "/drivers",
+    response_model=list[schemas.Driver],
+    dependencies=[Depends(require_user)],
+)
 def list_drivers(db: Session = Depends(get_db)):
     return db.query(models.Driver).all()
 
 
-@app.get("/drivers/{driver_id}", response_model=schemas.Driver)
+@app.get(
+    "/drivers/{driver_id}",
+    response_model=schemas.Driver,
+    dependencies=[Depends(require_user)],
+)
 def get_driver(driver_id: int, db: Session = Depends(get_db)):
     driver = db.get(models.Driver, driver_id)
     if driver is None:
@@ -155,7 +199,7 @@ def get_driver(driver_id: int, db: Session = Depends(get_db)):
     "/drivers",
     response_model=schemas.Driver,
     status_code=201,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     db_driver = models.Driver(**driver.model_dump())
@@ -168,7 +212,7 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
 @app.put(
     "/drivers/{driver_id}",
     response_model=schemas.Driver,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def update_driver(
     driver_id: int, driver: schemas.DriverUpdate, db: Session = Depends(get_db)
@@ -186,7 +230,7 @@ def update_driver(
 @app.delete(
     "/drivers/{driver_id}",
     status_code=204,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def delete_driver(driver_id: int, db: Session = Depends(get_db)):
     db_driver = db.get(models.Driver, driver_id)
@@ -199,13 +243,19 @@ def delete_driver(driver_id: int, db: Session = Depends(get_db)):
 # --- Driver Numbers ---
 
 
-@app.get("/driver-numbers", response_model=list[schemas.DriverNumber])
+@app.get(
+    "/driver-numbers",
+    response_model=list[schemas.DriverNumber],
+    dependencies=[Depends(require_user)],
+)
 def list_driver_numbers(db: Session = Depends(get_db)):
     return db.query(models.DriverNumber).all()
 
 
 @app.get(
-    "/driver-numbers/{driver_id}/{season}", response_model=schemas.DriverNumber
+    "/driver-numbers/{driver_id}/{season}",
+    response_model=schemas.DriverNumber,
+    dependencies=[Depends(require_user)],
 )
 def get_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)):
     driver_number = db.get(models.DriverNumber, (driver_id, season))
@@ -218,7 +268,7 @@ def get_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)
     "/driver-numbers",
     response_model=schemas.DriverNumber,
     status_code=201,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def create_driver_number(
     driver_number: schemas.DriverNumberCreate, db: Session = Depends(get_db)
@@ -233,7 +283,7 @@ def create_driver_number(
 @app.put(
     "/driver-numbers/{driver_id}/{season}",
     response_model=schemas.DriverNumber,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def update_driver_number(
     driver_id: int,
@@ -254,7 +304,7 @@ def update_driver_number(
 @app.delete(
     "/driver-numbers/{driver_id}/{season}",
     status_code=204,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def delete_driver_number(driver_id: int, season: int, db: Session = Depends(get_db)):
     db_driver_number = db.get(models.DriverNumber, (driver_id, season))
@@ -267,12 +317,20 @@ def delete_driver_number(driver_id: int, season: int, db: Session = Depends(get_
 # --- Grands Prix ---
 
 
-@app.get("/grands-prix", response_model=list[schemas.GrandPrix])
+@app.get(
+    "/grands-prix",
+    response_model=list[schemas.GrandPrix],
+    dependencies=[Depends(require_user)],
+)
 def list_grands_prix(db: Session = Depends(get_db)):
     return db.query(models.GrandPrix).all()
 
 
-@app.get("/grands-prix/{season}/{sequence_number}", response_model=schemas.GrandPrix)
+@app.get(
+    "/grands-prix/{season}/{sequence_number}",
+    response_model=schemas.GrandPrix,
+    dependencies=[Depends(require_user)],
+)
 def get_grand_prix(season: int, sequence_number: int, db: Session = Depends(get_db)):
     gp = db.get(models.GrandPrix, (season, sequence_number))
     if gp is None:
@@ -284,7 +342,7 @@ def get_grand_prix(season: int, sequence_number: int, db: Session = Depends(get_
     "/grands-prix",
     response_model=schemas.GrandPrix,
     status_code=201,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def create_grand_prix(gp: schemas.GrandPrixCreate, db: Session = Depends(get_db)):
     db_gp = models.GrandPrix(**gp.model_dump())
@@ -297,7 +355,7 @@ def create_grand_prix(gp: schemas.GrandPrixCreate, db: Session = Depends(get_db)
 @app.put(
     "/grands-prix/{season}/{sequence_number}",
     response_model=schemas.GrandPrix,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def update_grand_prix(
     season: int,
@@ -318,7 +376,7 @@ def update_grand_prix(
 @app.delete(
     "/grands-prix/{season}/{sequence_number}",
     status_code=204,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def delete_grand_prix(season: int, sequence_number: int, db: Session = Depends(get_db)):
     db_gp = db.get(models.GrandPrix, (season, sequence_number))
@@ -334,7 +392,7 @@ def delete_grand_prix(season: int, sequence_number: int, db: Session = Depends(g
 @app.get(
     "/users",
     response_model=list[schemas.User],
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def list_users(db: Session = Depends(get_db)):
     return db.query(models.User).all()
@@ -344,7 +402,7 @@ def list_users(db: Session = Depends(get_db)):
     "/users",
     response_model=schemas.User,
     status_code=201,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.username == user.username).first():
@@ -355,8 +413,34 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         password_salt=salt,
         password_hash=password_hash,
         password_iterations=iterations,
+        is_admin=user.is_admin,
     )
     db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+@app.put(
+    "/users/{username}",
+    response_model=schemas.User,
+    dependencies=[Depends(require_admin)],
+)
+def update_user(username: str, user: schemas.UserUpdate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.username == username).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    fields = user.model_dump(exclude_unset=True)
+    if "password" in fields:
+        password = fields.pop("password")
+        salt, password_hash, iterations = auth.hash_password(password)
+        db_user.password_salt = salt
+        db_user.password_hash = password_hash
+        db_user.password_iterations = iterations
+    if db_user.id == auth.ADMIN_USER_ID and fields.get("is_admin") is False:
+        raise HTTPException(status_code=400, detail="Cannot remove admin privileges from the admin user")
+    for field, value in fields.items():
+        setattr(db_user, field, value)
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -365,12 +449,14 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.delete(
     "/users/{username}",
     status_code=204,
-    dependencies=[Depends(require_api_key)],
+    dependencies=[Depends(require_admin)],
 )
 def delete_user(username: str, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == username).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
+    if db_user.id == auth.ADMIN_USER_ID:
+        raise HTTPException(status_code=400, detail="Cannot delete the admin user")
     db.delete(db_user)
     db.commit()
 

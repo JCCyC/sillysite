@@ -59,6 +59,7 @@ class User(Base):
     password_salt = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
     password_iterations = Column(Integer, nullable=False)
+    is_admin = Column(Boolean, nullable=False, default=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
     )

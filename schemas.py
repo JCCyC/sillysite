@@ -96,6 +96,12 @@ class GrandPrix(GrandPrixBase):
 class UserCreate(BaseModel):
     username: str
     password: str
+    is_admin: bool = False
+
+
+class UserUpdate(BaseModel):
+    password: str | None = None
+    is_admin: bool | None = None
 
 
 class User(BaseModel):
@@ -103,6 +109,7 @@ class User(BaseModel):
 
     id: int
     username: str
+    is_admin: bool
     created_at: datetime
 
 

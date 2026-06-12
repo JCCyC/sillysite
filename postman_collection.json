@@ -295,9 +295,30 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"correcthorsebatterystaple\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"correcthorsebatterystaple\",\n  \"is_admin\": false\n}"
             },
             "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_admin\": true\n}"
+            },
+            "url": "{{base_url}}/users/testuser"
           }
         },
         {

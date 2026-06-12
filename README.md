@@ -8,10 +8,14 @@ A FastAPI app with:
 - CRUD endpoints for `/users` and a challenge/response `/login` flow
 - `/favicon.ico`
 
-`GET` endpoints are public. `POST`/`PUT`/`DELETE` endpoints require an `X-API-Key` header,
-which can be either the static `API_KEY` configured in the environment (admin) or a token
-obtained by logging in (see below). `PUT` endpoints accept partial bodies — only the fields
-provided are updated.
+All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
+which can be either the static `API_KEY` configured in the environment (the `admin` user) or a
+token obtained by logging in (see below):
+- Logged-in non-admin users can make `GET` requests to the Formula One endpoints (`/teams`,
+  `/drivers`, `/driver-numbers`, `/grands-prix`).
+- Admins can do everything, including managing `/users`.
+
+`PUT` endpoints accept partial bodies — only the fields provided are updated.
 
 A Postman collection covering all endpoints is available in `postman_collection.json`.
 
@@ -24,9 +28,15 @@ After an admin creates a user via `POST /users`, that user can obtain a session 
 Password:
 ```
 
-On success, the token is printed to stdout and can be used as the `X-API-Key` header for write
-requests. The token is only valid from the IP address it was issued to, and expires after
-`session_ttl_seconds` (1 hour by default, configurable in the `app_config` table).
+On success, the token is printed to stdout and can be used as the `X-API-Key` header. The token
+is only valid from the IP address it was issued to, and expires after `session_ttl_seconds`
+(1 hour by default, configurable in the `app_config` table).
+
+## Admin user
+
+A non-removable `admin` user (id `0`) always exists and has `is_admin=True`. Requests made with
+the `.env` `API_KEY` are treated as this user. It can also have its own password set (via
+`PUT /users/admin`) and log in normally — both forms of authentication work independently.
 
 ## Setup
 
