@@ -33,7 +33,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
     `/change-password` changes that user's own password, `/whoami` returns information about
     that user and their session, and `/logout` invalidates the current session (by setting its
-    `expires_at` to one second in the past) — it fails with `400` if called with the static
+    `expires_at` to one second in the past) and returns
+    `{"msg": "User <username> logged out"}` — it fails with `400` if called with the static
     `.env` `API_KEY`, which has no session to invalidate.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and

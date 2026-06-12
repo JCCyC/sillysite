@@ -8,7 +8,8 @@ A FastAPI app with:
 - CRUD endpoints for `/users`, a challenge/response `/login` flow, and a `/change-password`
   endpoint
 - A `/whoami` endpoint returning information about the logged-in user and their session
-- A `/logout` endpoint that invalidates the current session (fails for the static `API_KEY`)
+- A `/logout` endpoint that invalidates the current session and returns a confirmation message
+  (fails for the static `API_KEY`)
 - A `/config` endpoint (admin-only) listing the `app_config` settings
 - An `/activeusers` endpoint (admin-only) listing active sessions: username, source IP, login
   time, and expiry time

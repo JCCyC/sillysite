@@ -535,7 +535,7 @@ def whoami(
 # --- Logout ---
 
 
-@app.get("/logout", status_code=204)
+@app.get("/logout")
 def logout(
     user: models.User = Depends(require_user),
     session: models.UserSession | None = Depends(auth.get_current_session),
@@ -546,6 +546,7 @@ def logout(
 
     session.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
     db.commit()
+    return {"msg": f"User {user.username} logged out"}
 
 
 # --- Config ---
