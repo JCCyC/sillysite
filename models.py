@@ -78,6 +78,7 @@ class UserSession(Base):
     )
     expires_at = Column(DateTime(timezone=True), nullable=False)
     used = Column(Boolean, nullable=False, default=False)
+    authenticated_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User")
 

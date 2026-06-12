@@ -19,6 +19,7 @@ CHALLENGE_BYTES = 32
 TOKEN_BYTES = 32
 DEFAULT_LOGIN_TIMEOUT_SECONDS = 60
 DEFAULT_SESSION_TTL_SECONDS = 3600
+DEFAULT_CHANGE_PW_TIMEOUT_SECONDS = 60
 
 ADMIN_USER_ID = 0
 ADMIN_USERNAME = "admin"
@@ -78,6 +79,35 @@ def get_current_user(
         return None
 
     return session.user
+
+
+def get_current_session(
+    request: Request,
+    api_key: str | None = Security(api_key_header),
+    db: Session = Depends(get_db),
+) -> models.UserSession | None:
+    """Resolves the session backing the caller's token, or None (e.g. for the static API key)."""
+    if api_key is None:
+        return None
+
+    if config.API_KEY and secrets.compare_digest(api_key, config.API_KEY):
+        return None
+
+    session = db.query(models.UserSession).filter(models.UserSession.token == api_key).first()
+    if session is None:
+        return None
+
+    now = datetime.now(timezone.utc)
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < now:
+        return None
+
+    if client_ip(request) != session.source_ip:
+        return None
+
+    return session
 
 
 def require_user(user: models.User | None = Depends(get_current_user)) -> models.User:

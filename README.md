@@ -5,7 +5,8 @@ A FastAPI app with:
 - `/` and `/about`, which each return `{"msg": "<random message>"}`
 - CRUD endpoints for Formula One data: `/teams`, `/drivers`, `/driver-numbers`, and
   `/grands-prix/{season}/{sequence_number}`, backed by PostgreSQL
-- CRUD endpoints for `/users` and a challenge/response `/login` flow
+- CRUD endpoints for `/users`, a challenge/response `/login` flow, and a `/change-password`
+  endpoint
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
@@ -34,6 +35,23 @@ challenge and submitting the response, the login fails with "Login timeout".
 On success, the token is printed to stdout and can be used as the `X-API-Key` header. The token
 is only valid from the IP address it was issued to, and expires after `session_ttl_seconds`
 (1 hour by default, configurable in the `app_config` table).
+
+## Changing your password
+
+A logged-in user can change their own password:
+
+```bash
+./changepw.py http://127.0.0.1:8000 <username>
+Current password:
+New password:
+Confirm new password:
+```
+
+This logs in with the current password (as above), then submits a new PBKDF2 salt/hash/iteration
+count derived locally from the new password — the new password itself is never sent over the
+network. If `POST /change-password` arrives more than `change_pw_timeout_seconds` (`app_config`,
+default 60) after the login completed, it fails with "Change password timeout". Requests made
+with the static `.env` `API_KEY` aren't subject to this timeout, since they aren't tied to a login.
 
 ## Admin user
 

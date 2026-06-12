@@ -377,6 +377,33 @@
       ]
     },
     {
+      "name": "Change Password",
+      "description": "Computing a PBKDF2 salt/hash for the new password isn't possible in Postman's sandbox. Use `./changepw.py <base_url> <username>` to actually change a password; this request is included for reference.",
+      "item": [
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "<session token from Login>"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_salt\": \"<random hex salt>\",\n  \"new_password_hash\": \"<PBKDF2-HMAC-SHA256(new_password, new_salt, new_iterations)>\",\n  \"new_iterations\": 200000\n}"
+            },
+            "url": "{{base_url}}/change-password"
+          }
+        }
+      ]
+    },
+    {
       "name": "Grands Prix",
       "item": [
         {

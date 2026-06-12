@@ -21,6 +21,7 @@ models.Base.metadata.create_all(bind=engine)
 DEFAULT_CONFIG = {
     "session_ttl_seconds": auth.DEFAULT_SESSION_TTL_SECONDS,
     "login_timeout_seconds": auth.DEFAULT_LOGIN_TIMEOUT_SECONDS,
+    "change_pw_timeout_seconds": auth.DEFAULT_CHANGE_PW_TIMEOUT_SECONDS,
 }
 
 
@@ -44,6 +45,9 @@ def _ensure_admin_user():
     with engine.connect() as conn:
         conn.execute(
             text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE")
+        )
+        conn.execute(
+            text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS authenticated_at TIMESTAMPTZ")
         )
         conn.commit()
 
@@ -547,6 +551,37 @@ def login_response(
     session.token = auth.generate_token()
     session.source_ip = auth.client_ip(request)
     session.expires_at = now + timedelta(seconds=ttl_seconds)
+    session.authenticated_at = now
     db.commit()
 
     return schemas.LoginResponseResponse(token=session.token, expires_at=session.expires_at)
+
+
+# --- Change Password ---
+
+
+@app.post(
+    "/change-password",
+    status_code=204,
+)
+def change_password(
+    body: schemas.ChangePasswordRequest,
+    user: models.User = Depends(require_user),
+    session: models.UserSession | None = Depends(auth.get_current_session),
+    db: Session = Depends(get_db),
+):
+    if session is not None:
+        now = datetime.now(timezone.utc)
+        authenticated_at = session.authenticated_at
+        if authenticated_at is None:
+            raise HTTPException(status_code=403, detail="Change password timeout")
+        if authenticated_at.tzinfo is None:
+            authenticated_at = authenticated_at.replace(tzinfo=timezone.utc)
+        timeout_seconds = _get_config_int(db, "change_pw_timeout_seconds")
+        if now - authenticated_at > timedelta(seconds=timeout_seconds):
+            raise HTTPException(status_code=403, detail="Change password timeout")
+
+    user.password_salt = body.new_salt
+    user.password_hash = body.new_password_hash
+    user.password_iterations = body.new_iterations
+    db.commit()

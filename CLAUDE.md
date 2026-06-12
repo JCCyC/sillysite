@@ -19,13 +19,16 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `id`), `/driver-numbers`
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
-  `/login/challenge` and `/login/response` endpoints, and serves `static/favicon.ico` at
-  `/favicon.ico`. `PUT` endpoints accept partial bodies — only the fields provided are updated.
-  On startup, a default `session_ttl_seconds` row (3600) is inserted into `app_config` if missing,
-  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing.
+  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, and serves
+  `static/favicon.ico` at `/favicon.ico`. `PUT` endpoints accept partial bodies — only the fields
+  provided are updated. On startup, default `app_config` rows (`session_ttl_seconds`,
+  `login_timeout_seconds`, `change_pw_timeout_seconds`) are inserted if missing, and a
+  non-removable `admin` user (id `0`, `is_admin=True`) is created if missing.
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
+  - `/change-password` requires any logged-in user (`require_user`); it changes that user's own
+    password.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`) requires an admin
     (`require_admin`).
@@ -34,8 +37,9 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   password, if set, also works independently via `/login`), or a session token issued by
   `/login/response` (checked against the `sessions` table for expiry and source IP).
   `require_user` requires any authenticated user; `require_admin` additionally requires
-  `is_admin`. It also holds the password hashing (PBKDF2-HMAC-SHA256) and challenge/response
-  helpers used by the login flow.
+  `is_admin`. `get_current_session` resolves the `UserSession` behind a session token (returning
+  `None` for the static API key), used by `/change-password` for its timeout check. It also holds
+  the password hashing (PBKDF2-HMAC-SHA256) and challenge/response helpers used by the login flow.
 - `config.py` loads database connection settings (`DB_HOST`, `DB_PORT`, `DB_SCHEMA`, `DB_NAME`,
   `DB_USER`, `DB_PASSWORD`) and the `API_KEY` used for write-endpoint authentication from
   environment variables / a `.env` file (see `.env.example`).
@@ -47,9 +51,10 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   between seasons). `GrandPrix` records the winning driver and team directly (since drivers can
   change teams mid-season). It also defines `User` (username, `is_admin` flag, plus PBKDF2
   salt/hash/iterations — never a plaintext password), `UserSession` (one-time login challenges
-  and, once redeemed, the issued token, its expiry, and the source IP it's restricted to), and
-  `AppConfig` (key/value settings, e.g. `session_ttl_seconds`). Tables are created automatically
-  on startup via `Base.metadata.create_all`.
+  and, once redeemed, the issued token, its expiry, the source IP it's restricted to, and
+  `authenticated_at`, the time the token was issued), and `AppConfig` (key/value settings, e.g.
+  `session_ttl_seconds`). Tables are created automatically on startup via
+  `Base.metadata.create_all`.
 - `schemas.py` defines the Pydantic request/response models used by the CRUD endpoints,
   including `*Create` schemas (all fields required, used for `POST`) and `*Update` schemas
   (all fields optional, used for `PUT` partial updates), plus the `User`/`UserCreate`/`UserUpdate`
@@ -57,6 +62,11 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 - `login.py` is a CLI script (`./login.py <url> <username>`) that prompts for a password,
   performs the challenge/response login flow, and prints the resulting session token to stdout
   (or an error to stderr).
+- `changepw.py` is a CLI script (`./changepw.py <url> <username>`) that prompts for the current
+  password, a new password, and a confirmation of the new password, logs in with the current
+  password (also used as the change-password timing reference), derives a new PBKDF2
+  salt/hash/iterations from the new password, and submits those to `/change-password` (so the
+  new password is never sent over the network).
 - `seed.py` is a one-off script that populates the database with Formula One season data from
   2014 through 2025 (run with `.venv/bin/python seed.py`).
 - `postman_collection.json` is a Postman collection covering all endpoints, with `base_url` and
@@ -77,3 +87,15 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 4. The returned `token` can be used as the `X-API-Key` header value, but only from the source IP
    it was issued to, and only until `expires_at`. What it grants access to depends on the user's
    `is_admin` flag (see access control above).
+
+## Change password flow
+
+1. The user logs in normally (see above), obtaining a session token.
+2. The client derives a fresh PBKDF2 salt/hash/iterations from the new password locally.
+3. `POST /change-password` with `{"new_salt", "new_password_hash", "new_iterations"}` (using the
+   session token as `X-API-Key`) overwrites the caller's stored password credentials — the new
+   password itself is never transmitted.
+4. If the request arrives more than `change_pw_timeout_seconds` (`app_config`, default 60) after
+   the session's token was issued (`UserSession.authenticated_at`), it fails with `403`
+   `"Change password timeout"`. Requests authenticated with the static `.env` `API_KEY` have no
+   associated session and are not subject to this timeout.

@@ -132,3 +132,9 @@ class LoginResponseRequest(BaseModel):
 class LoginResponseResponse(BaseModel):
     token: str
     expires_at: datetime
+
+
+class ChangePasswordRequest(BaseModel):
+    new_salt: str
+    new_password_hash: str
+    new_iterations: int
