@@ -558,7 +558,7 @@ def logout(
     if session is None:
         raise HTTPException(status_code=400, detail="Cannot log out the static API key")
 
-    session.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+    session.expires_at = datetime.now(timezone.utc) - timedelta(milliseconds=1)
     db.commit()
     return {"msg": f"User {user.username} logged out"}
 
