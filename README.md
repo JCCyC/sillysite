@@ -74,7 +74,7 @@ is only valid from the IP address it was issued to, and expires after `session_t
 (1 hour by default, configurable in the `app_config` table).
 
 Alternatively, `/login.html` serves a basic login page that performs this flow in the browser
-and redirects to `/whoami?apikey=<token>` on success. If you visit it with a valid
+and redirects to `/whoami.html?apikey=<token>` on success. If you visit it with a valid
 `X-API-Key`/`apikey` already set, it skips the page and returns the `/whoami` result directly.
 
 `/whoami.html` displays the same information as `/whoami`, styled like `/login.html`, with a

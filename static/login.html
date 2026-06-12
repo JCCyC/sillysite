@@ -161,7 +161,7 @@ form.addEventListener("submit", async (event) => {
 
   try {
     const token = await login(username, password);
-    window.location.href = "/whoami?apikey=" + encodeURIComponent(token);
+    window.location.href = "/whoami.html?apikey=" + encodeURIComponent(token);
   } catch (error) {
     messageEl.textContent = error.message;
     messageEl.className = "error";
