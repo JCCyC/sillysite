@@ -21,7 +21,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
   `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
   endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, a
-  `/login.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
+  `/login.html` page, a `/whoami.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
@@ -29,7 +29,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   `sessions` whose `expires_at` is more than an hour in the past.
 
   Access control (see `auth.py`):
-  - `/login/*`, `/`, `/about`, `/favicon.ico`, and `/login.html` are public.
+  - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, and `/whoami.html` are public.
   - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
     `/change-password` changes that user's own password, `/whoami` returns information about
     that user and their session, and `/logout` invalidates the current session (by setting its
@@ -116,3 +116,11 @@ above entirely in the browser using the Web Crypto API (`crypto.subtle` for PBKD
 HMAC-SHA256), then redirects to `GET /whoami?apikey=<token>` with the resulting token. If the
 request already carries a valid `X-API-Key`/`apikey` (header or query param, static or session),
 no HTML is served — the endpoint returns the `/whoami` result directly instead.
+
+## /whoami.html
+
+`GET /whoami.html` serves `static/whoami.html`, styled consistently with `static/login.html`,
+which fetches `GET /whoami` (using the `apikey` query parameter from its own URL, if present) and
+displays the current user's information nicely, with a "Log out" link (using the same `apikey`)
+shown if there's an associated session. If the request doesn't carry a valid `X-API-Key`/`apikey`
+(header or query param, static or session), it redirects to `/login.html` instead.

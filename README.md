@@ -14,6 +14,7 @@ A FastAPI app with:
 - An `/activeusers` endpoint (admin-only) listing active sessions: username, source IP, login
   time, and expiry time
 - A `/login.html` page implementing the login flow in the browser
+- A `/whoami.html` page showing the current user's `/whoami` info, styled like `/login.html`
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
@@ -37,6 +38,7 @@ A Postman collection covering all endpoints is available in `postman_collection.
 | `/about`                                   | `GET`                     |
 | `/favicon.ico`                             | `GET`                     |
 | `/login.html`                              | `GET`                     |
+| `/whoami.html`                             | `GET`                     |
 | `/teams`                                   | `GET`, `POST`             |
 | `/teams/{team_id}`                         | `GET`, `PUT`, `DELETE`    |
 | `/drivers`                                 | `GET`, `POST`             |
@@ -74,6 +76,10 @@ is only valid from the IP address it was issued to, and expires after `session_t
 Alternatively, `/login.html` serves a basic login page that performs this flow in the browser
 and redirects to `/whoami?apikey=<token>` on success. If you visit it with a valid
 `X-API-Key`/`apikey` already set, it skips the page and returns the `/whoami` result directly.
+
+`/whoami.html` displays the same information as `/whoami`, styled like `/login.html`, with a
+"Log out" link. It requires a valid `X-API-Key`/`apikey`, and redirects to `/login.html`
+otherwise.
 
 ## Changing your password
 

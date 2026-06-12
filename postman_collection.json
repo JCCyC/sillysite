@@ -46,6 +46,14 @@
             "method": "GET",
             "url": "{{base_url}}/login.html"
           }
+        },
+        {
+          "name": "Who Am I Page",
+          "description": "Displays the current user's /whoami information, styled like /login.html. Redirects to /login.html if no valid X-API-Key/apikey is supplied.",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/whoami.html?apikey={{api_key}}"
+          }
         }
       ]
     },

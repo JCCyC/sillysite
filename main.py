@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -148,6 +148,13 @@ def login_html(
     if user is not None:
         return _whoami(user, session)
     return FileResponse("static/login.html")
+
+
+@app.get("/whoami.html", include_in_schema=False)
+def whoami_html(user: models.User | None = Depends(auth.get_current_user)):
+    if user is None:
+        return RedirectResponse("/login.html")
+    return FileResponse("static/whoami.html")
 
 
 @app.get("/about")

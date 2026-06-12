@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silly Site &mdash; Who Am I</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f4f7;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+    text-align: center;
+    color: #1a1a2e;
+  }
+  dl {
+    margin: 0;
+  }
+  dt {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+  }
+  dd {
+    margin: 0.1rem 0 1rem;
+    font-size: 1rem;
+    word-break: break-all;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    background: #999;
+  }
+  .badge.admin {
+    background: #e10600;
+  }
+  a.button {
+    display: block;
+    margin-top: 0.5rem;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background: #e10600;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+  a.button:hover {
+    background: #c10500;
+  }
+  #message {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: #c0392b;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Who Am I</h1>
+    <dl id="whoami" hidden>
+      <dt>Username</dt>
+      <dd id="username"></dd>
+
+      <dt>Full name</dt>
+      <dd id="full_name"></dd>
+
+      <dt>Role</dt>
+      <dd><span class="badge" id="role"></span></dd>
+
+      <dt>Account created</dt>
+      <dd id="created_at"></dd>
+
+      <dt>Logged in at</dt>
+      <dd id="login_at"></dd>
+
+      <dt>Session expires at</dt>
+      <dd id="session_expires_at"></dd>
+    </dl>
+    <a class="button" id="logout-link" href="/logout" hidden>Log out</a>
+    <div id="message"></div>
+  </div>
+
+<script>
+function formatTimestamp(value) {
+  return value ? new Date(value).toLocaleString() : "—";
+}
+
+(async () => {
+  const apikey = new URLSearchParams(window.location.search).get("apikey");
+  const headers = apikey ? { "X-API-Key": apikey } : {};
+
+  try {
+    const response = await fetch("/whoami", { headers });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail || `${response.status} ${response.statusText}`);
+    }
+    const whoami = await response.json();
+
+    document.getElementById("username").textContent = whoami.username;
+    document.getElementById("full_name").textContent = whoami.full_name;
+
+    const role = document.getElementById("role");
+    role.textContent = whoami.is_admin ? "Admin" : "User";
+    role.classList.toggle("admin", whoami.is_admin);
+
+    document.getElementById("created_at").textContent = formatTimestamp(whoami.created_at);
+    document.getElementById("login_at").textContent = formatTimestamp(whoami.login_at);
+    document.getElementById("session_expires_at").textContent = formatTimestamp(whoami.session_expires_at);
+
+    document.getElementById("whoami").hidden = false;
+
+    if (apikey && whoami.session_expires_at) {
+      const logoutLink = document.getElementById("logout-link");
+      logoutLink.href = "/logout?apikey=" + encodeURIComponent(apikey);
+      logoutLink.hidden = false;
+    }
+  } catch (error) {
+    document.getElementById("message").textContent = error.message;
+  }
+})();
+</script>
+</body>
+</html>
