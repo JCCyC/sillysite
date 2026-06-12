@@ -7,6 +7,7 @@ A FastAPI app with:
   `/grands-prix/{season}/{sequence_number}`, backed by PostgreSQL
 - CRUD endpoints for `/users`, a challenge/response `/login` flow, and a `/change-password`
   endpoint
+- A `/config` endpoint (admin-only) listing the `app_config` settings
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,

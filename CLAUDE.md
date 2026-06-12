@@ -19,19 +19,19 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `id`), `/driver-numbers`
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
-  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, and serves
-  `static/favicon.ico` at `/favicon.ico`. `PUT` endpoints accept partial bodies — only the fields
-  provided are updated. On startup, default `app_config` rows (`session_ttl_seconds`,
-  `login_timeout_seconds`, `change_pw_timeout_seconds`) are inserted if missing, and a
-  non-removable `admin` user (id `0`, `is_admin=True`) is created if missing.
+  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/config`
+  endpoint, and serves `static/favicon.ico` at `/favicon.ico`. `PUT` endpoints accept partial
+  bodies — only the fields provided are updated. On startup, default `app_config` rows
+  (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`) are inserted if
+  missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing.
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
   - `/change-password` requires any logged-in user (`require_user`); it changes that user's own
     password.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
-  - Everything else (writes on Formula One data, all of `/users`) requires an admin
-    (`require_admin`).
+  - Everything else (writes on Formula One data, all of `/users`, and `GET /config`) requires an
+    admin (`require_admin`).
 - `auth.py` resolves the caller's `User` from the `X-API-Key` header: either the static key
   matching `config.API_KEY` (which maps to the `admin` user, id `0` — so that user's own
   password, if set, also works independently via `/login`), or a session token issued by

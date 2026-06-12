@@ -472,6 +472,18 @@ def delete_user(username: str, db: Session = Depends(get_db)):
     db.commit()
 
 
+# --- Config ---
+
+
+@app.get(
+    "/config",
+    response_model=list[schemas.AppConfig],
+    dependencies=[Depends(require_admin)],
+)
+def list_config(db: Session = Depends(get_db)):
+    return db.query(models.AppConfig).all()
+
+
 # --- Login ---
 
 
