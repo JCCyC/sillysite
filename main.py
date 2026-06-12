@@ -97,8 +97,8 @@ def _cleanup_expired_sessions():
 
 def _session_cleanup_loop():
     while True:
-        time.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
         _cleanup_expired_sessions()
+        time.sleep(SESSION_CLEANUP_INTERVAL_SECONDS)
 
 
 threading.Thread(target=_session_cleanup_loop, daemon=True).start()
