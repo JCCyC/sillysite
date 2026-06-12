@@ -132,6 +132,9 @@ prepare commits locally and let the user push manually.
    the session's token was issued (`UserSession.authenticated_at`), it fails with `403`
    `"Change password timeout"`. Requests authenticated with the static `.env` `API_KEY` have no
    associated session and are not subject to this timeout.
+5. Regardless of success or failure, if the request was authenticated with a session token, that
+   session's `expires_at` is immediately set to one millisecond in the past — the session created
+   to authorize the password change is single-use and doesn't linger as active afterward.
 
 ## /login.html
 

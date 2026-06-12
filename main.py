@@ -699,18 +699,23 @@ def change_password(
     session: models.UserSession | None = Depends(auth.get_current_session),
     db: Session = Depends(get_db),
 ):
-    if session is not None:
-        now = datetime.now(timezone.utc)
-        authenticated_at = session.authenticated_at
-        if authenticated_at is None:
-            raise HTTPException(status_code=403, detail="Change password timeout")
-        if authenticated_at.tzinfo is None:
-            authenticated_at = authenticated_at.replace(tzinfo=timezone.utc)
-        timeout_seconds = _get_config_int(db, "change_pw_timeout_seconds")
-        if now - authenticated_at > timedelta(seconds=timeout_seconds):
-            raise HTTPException(status_code=403, detail="Change password timeout")
+    try:
+        if session is not None:
+            now = datetime.now(timezone.utc)
+            authenticated_at = session.authenticated_at
+            if authenticated_at is None:
+                raise HTTPException(status_code=403, detail="Change password timeout")
+            if authenticated_at.tzinfo is None:
+                authenticated_at = authenticated_at.replace(tzinfo=timezone.utc)
+            timeout_seconds = _get_config_int(db, "change_pw_timeout_seconds")
+            if now - authenticated_at > timedelta(seconds=timeout_seconds):
+                raise HTTPException(status_code=403, detail="Change password timeout")
 
-    user.password_salt = body.new_salt
-    user.password_hash = body.new_password_hash
-    user.password_iterations = body.new_iterations
-    db.commit()
+        user.password_salt = body.new_salt
+        user.password_hash = body.new_password_hash
+        user.password_iterations = body.new_iterations
+        db.commit()
+    finally:
+        if session is not None:
+            session.expires_at = datetime.now(timezone.utc) - timedelta(milliseconds=1)
+            db.commit()

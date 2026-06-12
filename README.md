@@ -101,6 +101,8 @@ count derived locally from the new password — the new password itself is never
 network. If `POST /change-password` arrives more than `change_pw_timeout_seconds` (`app_config`,
 default 60) after the login completed, it fails with "Change password timeout". Requests made
 with the static `.env` `API_KEY` aren't subject to this timeout, since they aren't tied to a login.
+Either way, the session created for the password change is expired immediately once the request
+is handled — it's single-use and doesn't remain active afterward.
 
 Alternatively, `/changepw.html` serves a basic "Password change for `<username>`" page, styled
 like `/login.html`, that performs this same flow in the browser and shows a styled success or
