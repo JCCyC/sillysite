@@ -32,14 +32,16 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, and `GET /config`) requires an
     admin (`require_admin`).
-- `auth.py` resolves the caller's `User` from the `X-API-Key` header: either the static key
-  matching `config.API_KEY` (which maps to the `admin` user, id `0` — so that user's own
-  password, if set, also works independently via `/login`), or a session token issued by
-  `/login/response` (checked against the `sessions` table for expiry and source IP).
-  `require_user` requires any authenticated user; `require_admin` additionally requires
-  `is_admin`. `get_current_session` resolves the `UserSession` behind a session token (returning
-  `None` for the static API key), used by `/change-password` for its timeout check. It also holds
-  the password hashing (PBKDF2-HMAC-SHA256) and challenge/response helpers used by the login flow.
+- `auth.py` resolves the caller's `User` from the `X-API-Key` header or an `apikey` query
+  parameter (`resolve_api_key`; if both are present, the request is treated as unauthenticated,
+  even if they match): either the static key matching `config.API_KEY` (which maps to the `admin`
+  user, id `0` — so that user's own password, if set, also works independently via `/login`), or
+  a session token issued by `/login/response` (checked against the `sessions` table for expiry
+  and source IP). `require_user` requires any authenticated user; `require_admin` additionally
+  requires `is_admin`. `get_current_session` resolves the `UserSession` behind a session token
+  (returning `None` for the static API key), used by `/change-password` for its timeout check. It
+  also holds the password hashing (PBKDF2-HMAC-SHA256) and challenge/response helpers used by the
+  login flow.
 - `config.py` loads database connection settings (`DB_HOST`, `DB_PORT`, `DB_SCHEMA`, `DB_NAME`,
   `DB_USER`, `DB_PASSWORD`) and the `API_KEY` used for write-endpoint authentication from
   environment variables / a `.env` file (see `.env.example`).

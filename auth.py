@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, timezone
 
 from fastapi import Depends, HTTPException, Request, Security
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, APIKeyQuery
 from sqlalchemy.orm import Session
 
 import config
@@ -12,6 +12,7 @@ import models
 from database import get_db
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+api_key_query = APIKeyQuery(name="apikey", auto_error=False)
 
 PBKDF2_ITERATIONS = 200_000
 SALT_BYTES = 16
@@ -52,9 +53,22 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
+def resolve_api_key(
+    header_key: str | None = Security(api_key_header),
+    query_key: str | None = Security(api_key_query),
+) -> str | None:
+    """Returns the API key from the header or the `apikey` query param.
+
+    If both are provided, treat the request as unauthenticated, even if they match.
+    """
+    if header_key is not None and query_key is not None:
+        return None
+    return header_key if header_key is not None else query_key
+
+
 def get_current_user(
     request: Request,
-    api_key: str | None = Security(api_key_header),
+    api_key: str | None = Depends(resolve_api_key),
     db: Session = Depends(get_db),
 ) -> models.User | None:
     """Resolves the caller's user, or None if unauthenticated."""
@@ -83,7 +97,7 @@ def get_current_user(
 
 def get_current_session(
     request: Request,
-    api_key: str | None = Security(api_key_header),
+    api_key: str | None = Depends(resolve_api_key),
     db: Session = Depends(get_db),
 ) -> models.UserSession | None:
     """Resolves the session backing the caller's token, or None (e.g. for the static API key)."""

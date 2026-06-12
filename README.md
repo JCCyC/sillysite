@@ -12,7 +12,9 @@ A FastAPI app with:
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
 which can be either the static `API_KEY` configured in the environment (the `admin` user) or a
-token obtained by logging in (see below):
+token obtained by logging in (see below). Instead of the header, the same value can be passed as
+an `?apikey=...` query parameter; specifying both the header and the query parameter is treated
+as if neither were provided.
 - Logged-in non-admin users can make `GET` requests to the Formula One endpoints (`/teams`,
   `/drivers`, `/driver-numbers`, `/grands-prix`).
 - Admins can do everything, including managing `/users`.
