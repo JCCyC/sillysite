@@ -6,11 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a minimal FastAPI app used for testing website deployment. All routes live in `main.py`.
 
+## Project Stack
+
+This is a FastAPI (Python) project. Use a virtual environment (venv), and always verify database
+integration after schema or seed data changes.
+
 ## Commands
 
 - Set up the virtual environment: `python3 -m venv .venv`
 - Install dependencies: `.venv/bin/pip install -r requirements.txt`
 - Run the dev server: `.venv/bin/uvicorn main:app --reload` (or `./run.sh`, which `cd`s to the repo root first)
+
+## Data Conventions
+
+Use F1-themed seed data with years ranging 2014-2025 (do not assume 2026 or future data unless
+explicitly requested).
+
+## Workflow
+
+After implementing endpoints or features, run tests/verify the change and update docs and
+Postman collection accordingly.
+
+## Git & Deployment
+
+GitHub auth in this environment is unreliable (interactive gh flows and network timeouts fail);
+prepare commits locally and let the user push manually.
 
 ## Architecture
 
