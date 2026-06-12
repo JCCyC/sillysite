@@ -3,6 +3,7 @@ import secrets
 import threading
 import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
@@ -143,10 +144,10 @@ def favicon():
 @app.get("/login.html", include_in_schema=False)
 def login_html(
     user: models.User | None = Depends(auth.get_current_user),
-    session: models.UserSession | None = Depends(auth.get_current_session),
+    api_key: str | None = Depends(auth.resolve_api_key),
 ):
     if user is not None:
-        return _whoami(user, session)
+        return RedirectResponse(f"/whoami.html?apikey={quote(api_key)}")
     return FileResponse("static/login.html")
 
 

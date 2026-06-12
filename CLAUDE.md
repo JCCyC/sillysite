@@ -115,7 +115,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 above entirely in the browser using the Web Crypto API (`crypto.subtle` for PBKDF2 and
 HMAC-SHA256), then redirects to `GET /whoami.html?apikey=<token>` with the resulting token. If the
 request already carries a valid `X-API-Key`/`apikey` (header or query param, static or session),
-no HTML is served — the endpoint returns the `/whoami` result directly instead.
+no HTML is served — the endpoint instead redirects (`307`) to `GET /whoami.html?apikey=<that key>`.
 
 ## /whoami.html
 
