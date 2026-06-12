@@ -518,6 +518,22 @@ def whoami(
     )
 
 
+# --- Logout ---
+
+
+@app.post("/logout", status_code=204)
+def logout(
+    user: models.User = Depends(require_user),
+    session: models.UserSession | None = Depends(auth.get_current_session),
+    db: Session = Depends(get_db),
+):
+    if session is None:
+        raise HTTPException(status_code=400, detail="Cannot log out the static API key")
+
+    session.expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+    db.commit()
+
+
 # --- Config ---
 
 

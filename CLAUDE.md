@@ -20,8 +20,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
   `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
-  endpoint, a `/config` endpoint, an `/activeusers` endpoint, and serves `static/favicon.ico` at
-  `/favicon.ico`. `PUT`
+  endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, and serves
+  `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
@@ -30,9 +30,11 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
-  - `/change-password` and `/whoami` require any logged-in user (`require_user`); the former
-    changes that user's own password, the latter returns information about that user and their
-    session.
+  - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
+    `/change-password` changes that user's own password, `/whoami` returns information about
+    that user and their session, and `/logout` invalidates the current session (by setting its
+    `expires_at` to one second in the past) — it fails with `400` if called with the static
+    `.env` `API_KEY`, which has no session to invalidate.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and
     `GET /activeusers`) requires an admin (`require_admin`).
