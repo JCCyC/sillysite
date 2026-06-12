@@ -103,8 +103,8 @@ default 60) after the login completed, it fails with "Change password timeout". 
 with the static `.env` `API_KEY` aren't subject to this timeout, since they aren't tied to a login.
 
 Alternatively, `/changepw.html` serves a basic "Password change for `<username>`" page, styled
-like `/login.html`, that performs this same flow in the browser and shows the result as JSON
-(`{"msg": ...}` or `{"detail": ...}`). It requires a valid `X-API-Key`/`apikey`, and redirects to
+like `/login.html`, that performs this same flow in the browser and shows a styled success or
+error message below the form. It requires a valid `X-API-Key`/`apikey`, and redirects to
 `/login.html` otherwise.
 
 ## Admin user

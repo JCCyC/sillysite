@@ -157,6 +157,6 @@ the `apikey` query parameter from its own URL, if present). It has fields for th
 password, new password, and confirmation, and on submit performs the login flow (above) with the
 current password to obtain a fresh session token, derives a new PBKDF2 salt/hash/iterations from
 the new password, and submits those to `/change-password` via that token — entirely in the
-browser, mirroring `changepw.py`. The result is shown as JSON (`{"msg": ...}` on success or
-`{"detail": ...}` on error). If the request doesn't carry a valid `X-API-Key`/`apikey` (header or
+browser, mirroring `changepw.py`. The result is shown as a styled message below the form (green
+on success, red on error). If the request doesn't carry a valid `X-API-Key`/`apikey` (header or
 query param, static or session), it redirects to `/login.html` instead.

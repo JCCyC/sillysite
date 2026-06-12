@@ -67,15 +67,16 @@
   button:hover:not(:disabled) {
     background: #c10500;
   }
-  #result {
+  #message {
     margin-top: 1rem;
-    background: #f8f8fa;
-    border: 1px solid #e0e0e6;
-    border-radius: 6px;
-    padding: 0.75rem;
-    font-size: 0.8rem;
-    white-space: pre-wrap;
-    word-break: break-all;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  #message.error {
+    color: #c0392b;
+  }
+  #message.success {
+    color: #2e7d32;
   }
 </style>
 </head>
@@ -94,7 +95,7 @@
 
       <button type="submit" id="submit-button">Change password</button>
     </form>
-    <pre id="result" hidden></pre>
+    <div id="message"></div>
   </div>
 
 <script>
@@ -158,7 +159,7 @@ async function login(username, password) {
 
 const apikey = new URLSearchParams(window.location.search).get("apikey");
 const form = document.getElementById("changepw-form");
-const resultEl = document.getElementById("result");
+const messageEl = document.getElementById("message");
 const submitButton = document.getElementById("submit-button");
 
 let username = null;
@@ -182,7 +183,8 @@ form.addEventListener("submit", async (event) => {
   const newPassword = document.getElementById("new-password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
 
-  resultEl.hidden = true;
+  messageEl.textContent = "";
+  messageEl.className = "";
   submitButton.disabled = true;
 
   try {
@@ -209,12 +211,12 @@ form.addEventListener("submit", async (event) => {
       token
     );
 
-    resultEl.textContent = JSON.stringify({ msg: "Password changed successfully" }, null, 2);
-    resultEl.hidden = false;
+    messageEl.textContent = "Password changed successfully";
+    messageEl.className = "success";
     form.reset();
   } catch (error) {
-    resultEl.textContent = JSON.stringify({ detail: error.message }, null, 2);
-    resultEl.hidden = false;
+    messageEl.textContent = error.message;
+    messageEl.className = "error";
   } finally {
     submitButton.disabled = false;
   }
