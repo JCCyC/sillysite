@@ -521,7 +521,7 @@ def whoami(
 # --- Logout ---
 
 
-@app.post("/logout", status_code=204)
+@app.get("/logout", status_code=204)
 def logout(
     user: models.User = Depends(require_user),
     session: models.UserSession | None = Depends(auth.get_current_session),

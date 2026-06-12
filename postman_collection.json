@@ -360,7 +360,7 @@
         {
           "name": "Logout",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
                 "key": "X-API-Key",
