@@ -72,8 +72,8 @@ is only valid from the IP address it was issued to, and expires after `session_t
 (1 hour by default, configurable in the `app_config` table).
 
 Alternatively, `/login.html` serves a basic login page that performs this flow in the browser
-and displays the resulting `/whoami` info. If you visit it with a valid `X-API-Key`/`apikey`
-already set, it skips the page and returns the `/whoami` result directly.
+and redirects to `/whoami?apikey=<token>` on success. If you visit it with a valid
+`X-API-Key`/`apikey` already set, it skips the page and returns the `/whoami` result directly.
 
 ## Changing your password
 

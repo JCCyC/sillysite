@@ -113,6 +113,6 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 
 `GET /login.html` serves `static/login.html`, a small login form that performs the login flow
 above entirely in the browser using the Web Crypto API (`crypto.subtle` for PBKDF2 and
-HMAC-SHA256), then fetches and displays `GET /whoami` with the resulting token. If the request
-already carries a valid `X-API-Key`/`apikey` (header or query param, static or session), no HTML
-is served — the endpoint returns the `/whoami` result directly instead.
+HMAC-SHA256), then redirects to `GET /whoami?apikey=<token>` with the resulting token. If the
+request already carries a valid `X-API-Key`/`apikey` (header or query param, static or session),
+no HTML is served — the endpoint returns the `/whoami` result directly instead.
