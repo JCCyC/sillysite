@@ -123,6 +123,11 @@ class User(BaseModel):
     created_at: datetime
 
 
+class WhoAmI(User):
+    login_at: datetime | None = None
+    session_expires_at: datetime | None = None
+
+
 class LoginChallengeRequest(BaseModel):
     username: str
 

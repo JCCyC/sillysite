@@ -19,16 +19,18 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `id`), `/driver-numbers`
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
-  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/config`
-  endpoint, and serves `static/favicon.ico` at `/favicon.ico`. `PUT` endpoints accept partial
-  bodies — only the fields provided are updated. On startup, default `app_config` rows
-  (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`) are inserted if
-  missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing.
+  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
+  endpoint, a `/config` endpoint, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
+  endpoints accept partial bodies — only the fields provided are updated. On startup, default
+  `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
+  are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
+  if missing.
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
-  - `/change-password` requires any logged-in user (`require_user`); it changes that user's own
-    password.
+  - `/change-password` and `/whoami` require any logged-in user (`require_user`); the former
+    changes that user's own password, the latter returns information about that user and their
+    session.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, and `GET /config`) requires an
     admin (`require_admin`).

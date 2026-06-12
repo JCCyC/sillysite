@@ -7,6 +7,7 @@ A FastAPI app with:
   `/grands-prix/{season}/{sequence_number}`, backed by PostgreSQL
 - CRUD endpoints for `/users`, a challenge/response `/login` flow, and a `/change-password`
   endpoint
+- A `/whoami` endpoint returning information about the logged-in user and their session
 - A `/config` endpoint (admin-only) listing the `app_config` settings
 - `/favicon.ico`
 

@@ -337,6 +337,24 @@
       ]
     },
     {
+      "name": "Whoami",
+      "item": [
+        {
+          "name": "Who Am I",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/whoami"
+          }
+        }
+      ]
+    },
+    {
       "name": "Config",
       "item": [
         {
