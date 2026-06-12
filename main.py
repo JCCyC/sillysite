@@ -129,7 +129,9 @@ ABOUT_MESSAGES = [
 
 
 @app.get("/", include_in_schema=False)
-def read_root():
+def read_root(api_key: str | None = Depends(auth.resolve_api_key)):
+    if api_key is not None:
+        return RedirectResponse(f"/login.html?apikey={quote(api_key)}")
     return RedirectResponse("/login.html")
 
 

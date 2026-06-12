@@ -20,7 +20,7 @@
       "item": [
         {
           "name": "Home",
-          "description": "Redirects to /login.html.",
+          "description": "Redirects to /login.html, passing along the X-API-Key/apikey (if any) as ?apikey=.",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/"

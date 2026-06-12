@@ -2,7 +2,7 @@
 Test for website deployment
 
 A FastAPI app with:
-- `/`, which redirects to `/login.html`
+- `/`, which redirects to `/login.html` (passing along the caller's API key as `?apikey=`, if any)
 - `/about`, which returns `{"msg": "<random message>"}`
 - CRUD endpoints for Formula One data: `/teams`, `/drivers`, `/driver-numbers`, and
   `/grands-prix/{season}/{sequence_number}`, backed by PostgreSQL

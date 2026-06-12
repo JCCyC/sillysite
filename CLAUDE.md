@@ -14,8 +14,10 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
 
 ## Architecture
 
-- `main.py` defines the FastAPI app. `/` redirects (`307`) to `/login.html`, and `/about` returns
-  `{"msg": "<random message>"}` chosen from a small list of candidate messages. It also defines
+- `main.py` defines the FastAPI app. `/` redirects (`307`) to `/login.html`, carrying along the
+  caller's `X-API-Key`/`apikey` (header or query param) as an `apikey` query param if present, and
+  `/about` returns `{"msg": "<random message>"}` chosen from a small list of candidate messages.
+  It also defines
   CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `id`), `/driver-numbers`
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
