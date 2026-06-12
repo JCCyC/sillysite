@@ -16,6 +16,7 @@ A FastAPI app with:
   time, and expiry time
 - A `/login.html` page implementing the login flow in the browser
 - A `/whoami.html` page showing the current user's `/whoami` info, styled like `/login.html`
+- A `/changepw.html` page for changing the logged-in user's password, styled like `/login.html`
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
@@ -40,6 +41,7 @@ A Postman collection covering all endpoints is available in `postman_collection.
 | `/favicon.ico`                             | `GET`                     |
 | `/login.html`                              | `GET`                     |
 | `/whoami.html`                             | `GET`                     |
+| `/changepw.html`                           | `GET`                     |
 | `/teams`                                   | `GET`, `POST`             |
 | `/teams/{team_id}`                         | `GET`, `PUT`, `DELETE`    |
 | `/drivers`                                 | `GET`, `POST`             |
@@ -99,6 +101,11 @@ count derived locally from the new password — the new password itself is never
 network. If `POST /change-password` arrives more than `change_pw_timeout_seconds` (`app_config`,
 default 60) after the login completed, it fails with "Change password timeout". Requests made
 with the static `.env` `API_KEY` aren't subject to this timeout, since they aren't tied to a login.
+
+Alternatively, `/changepw.html` serves a basic "Password change for `<username>`" page, styled
+like `/login.html`, that performs this same flow in the browser and shows the result as JSON
+(`{"msg": ...}` or `{"detail": ...}`). It requires a valid `X-API-Key`/`apikey`, and redirects to
+`/login.html` otherwise.
 
 ## Admin user
 

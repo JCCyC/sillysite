@@ -55,6 +55,14 @@
             "method": "GET",
             "url": "{{base_url}}/whoami.html?apikey={{api_key}}"
           }
+        },
+        {
+          "name": "Change Password Page",
+          "description": "Serves a 'Password change for <username>' form, styled like /login.html, that performs the change-password flow in the browser and shows the JSON result. Redirects to /login.html if no valid X-API-Key/apikey is supplied.",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/changepw.html?apikey={{api_key}}"
+          }
         }
       ]
     },

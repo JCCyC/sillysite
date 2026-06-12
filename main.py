@@ -157,6 +157,13 @@ def whoami_html(user: models.User | None = Depends(auth.get_current_user)):
     return FileResponse("static/whoami.html")
 
 
+@app.get("/changepw.html", include_in_schema=False)
+def changepw_html(user: models.User | None = Depends(auth.get_current_user)):
+    if user is None:
+        return RedirectResponse("/login.html")
+    return FileResponse("static/changepw.html")
+
+
 @app.get("/about")
 def read_about():
     return {"msg": random.choice(ABOUT_MESSAGES)}

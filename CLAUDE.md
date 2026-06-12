@@ -43,7 +43,8 @@ prepare commits locally and let the user push manually.
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
   `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
   endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, a
-  `/login.html` page, a `/whoami.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
+  `/login.html` page, a `/whoami.html` page, a `/changepw.html` page, and serves
+  `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
@@ -51,7 +52,8 @@ prepare commits locally and let the user push manually.
   `sessions` whose `expires_at` is more than an hour in the past.
 
   Access control (see `auth.py`):
-  - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, and `/whoami.html` are public.
+  - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, `/whoami.html`, and `/changepw.html`
+    are public.
   - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
     `/change-password` changes that user's own password, `/whoami` returns information about
     that user and their session, and `/logout` invalidates the current session (by setting its
@@ -146,3 +148,15 @@ which fetches `GET /whoami` (using the `apikey` query parameter from its own URL
 displays the current user's information nicely, with a "Log out" link (using the same `apikey`)
 shown if there's an associated session. If the request doesn't carry a valid `X-API-Key`/`apikey`
 (header or query param, static or session), it redirects to `/login.html` instead.
+
+## /changepw.html
+
+`GET /changepw.html` serves `static/changepw.html`, styled consistently with `static/login.html`,
+titled "Password change for `<username>`" (fetching `GET /whoami` to learn the username, using
+the `apikey` query parameter from its own URL, if present). It has fields for the current
+password, new password, and confirmation, and on submit performs the login flow (above) with the
+current password to obtain a fresh session token, derives a new PBKDF2 salt/hash/iterations from
+the new password, and submits those to `/change-password` via that token — entirely in the
+browser, mirroring `changepw.py`. The result is shown as JSON (`{"msg": ...}` on success or
+`{"detail": ...}` on error). If the request doesn't carry a valid `X-API-Key`/`apikey` (header or
+query param, static or session), it redirects to `/login.html` instead.

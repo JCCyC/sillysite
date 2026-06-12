@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silly Site &mdash; Change Password</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f4f7;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+    text-align: center;
+    color: #1a1a2e;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #333;
+  }
+  input {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background: #e10600;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  button:hover:not(:disabled) {
+    background: #c10500;
+  }
+  #result {
+    margin-top: 1rem;
+    background: #f8f8fa;
+    border: 1px solid #e0e0e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">Password change</h1>
+    <form id="changepw-form">
+      <label for="current-password">Current password</label>
+      <input type="password" id="current-password" name="current-password" autocomplete="current-password" required>
+
+      <label for="new-password">New password</label>
+      <input type="password" id="new-password" name="new-password" autocomplete="new-password" required>
+
+      <label for="confirm-password">Confirm new password</label>
+      <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required>
+
+      <button type="submit" id="submit-button">Change password</button>
+    </form>
+    <pre id="result" hidden></pre>
+  </div>
+
+<script>
+const PBKDF2_ITERATIONS = 200000;
+const SALT_BYTES = 16;
+
+function hexToBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
+function bytesToHex(bytes) {
+  return Array.from(new Uint8Array(bytes))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function postJson(url, body, apikey) {
+  const headers = { "Content-Type": "application/json" };
+  if (apikey) headers["X-API-Key"] = apikey;
+  const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || `${response.status} ${response.statusText}`);
+  }
+  return data;
+}
+
+async function deriveKey(password, salt, iterations) {
+  const passwordKey = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
+  );
+  return crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    passwordKey,
+    256
+  );
+}
+
+async function login(username, password) {
+  const challengeData = await postJson("/login/challenge", { username });
+
+  const salt = hexToBytes(challengeData.salt);
+  const iterations = challengeData.iterations;
+  const challenge = challengeData.challenge;
+
+  const derivedBits = await deriveKey(password, salt, iterations);
+
+  const hmacKey = await crypto.subtle.importKey(
+    "raw", derivedBits, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", hmacKey, hexToBytes(challenge));
+  const response = bytesToHex(signature);
+
+  const loginData = await postJson("/login/response", { username, challenge, response });
+  return loginData.token;
+}
+
+const apikey = new URLSearchParams(window.location.search).get("apikey");
+const form = document.getElementById("changepw-form");
+const resultEl = document.getElementById("result");
+const submitButton = document.getElementById("submit-button");
+
+let username = null;
+
+(async () => {
+  try {
+    const response = await fetch("/whoami", { headers: apikey ? { "X-API-Key": apikey } : {} });
+    const whoami = await response.json();
+    if (response.ok) {
+      username = whoami.username;
+      document.getElementById("title").textContent = `Password change for ${username}`;
+    }
+  } catch (error) {
+    // Leave the generic title in place if /whoami can't be reached.
+  }
+})();
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const currentPassword = document.getElementById("current-password").value;
+  const newPassword = document.getElementById("new-password").value;
+  const confirmPassword = document.getElementById("confirm-password").value;
+
+  resultEl.hidden = true;
+  submitButton.disabled = true;
+
+  try {
+    if (!username) {
+      throw new Error("Could not determine the current user");
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new Error("New password and confirmation do not match");
+    }
+
+    const token = await login(username, currentPassword);
+
+    const newSalt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+    const newHash = await deriveKey(newPassword, newSalt, PBKDF2_ITERATIONS);
+
+    await postJson(
+      "/change-password",
+      {
+        new_salt: bytesToHex(newSalt),
+        new_password_hash: bytesToHex(newHash),
+        new_iterations: PBKDF2_ITERATIONS,
+      },
+      token
+    );
+
+    resultEl.textContent = JSON.stringify({ msg: "Password changed successfully" }, null, 2);
+    resultEl.hidden = false;
+    form.reset();
+  } catch (error) {
+    resultEl.textContent = JSON.stringify({ detail: error.message }, null, 2);
+    resultEl.hidden = false;
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
