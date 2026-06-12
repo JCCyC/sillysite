@@ -20,8 +20,8 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
   (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
   `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
-  endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, and serves
-  `static/favicon.ico` at `/favicon.ico`. `PUT`
+  endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, a
+  `/login.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`)
   are inserted if missing, and a non-removable `admin` user (id `0`, `is_admin=True`) is created
@@ -29,7 +29,7 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
   `sessions` whose `expires_at` is more than an hour in the past.
 
   Access control (see `auth.py`):
-  - `/login/*`, `/`, `/about`, and `/favicon.ico` are public.
+  - `/login/*`, `/`, `/about`, `/favicon.ico`, and `/login.html` are public.
   - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
     `/change-password` changes that user's own password, `/whoami` returns information about
     that user and their session, and `/logout` invalidates the current session (by setting its
@@ -107,3 +107,11 @@ This is a minimal FastAPI app used for testing website deployment. All routes li
    the session's token was issued (`UserSession.authenticated_at`), it fails with `403`
    `"Change password timeout"`. Requests authenticated with the static `.env` `API_KEY` have no
    associated session and are not subject to this timeout.
+
+## /login.html
+
+`GET /login.html` serves `static/login.html`, a small login form that performs the login flow
+above entirely in the browser using the Web Crypto API (`crypto.subtle` for PBKDF2 and
+HMAC-SHA256), then fetches and displays `GET /whoami` with the resulting token. If the request
+already carries a valid `X-API-Key`/`apikey` (header or query param, static or session), no HTML
+is served — the endpoint returns the `/whoami` result directly instead.

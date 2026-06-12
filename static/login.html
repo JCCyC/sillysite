@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silly Site &mdash; Log in</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root {
+    color-scheme: light dark;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f4f4f7;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+    text-align: center;
+    color: #1a1a2e;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #333;
+  }
+  input {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    width: 100%;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background: #e10600;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  button:hover:not(:disabled) {
+    background: #c10500;
+  }
+  #message {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  #message.error {
+    color: #c0392b;
+  }
+  #result {
+    margin-top: 1rem;
+    background: #f8f8fa;
+    border: 1px solid #e0e0e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Silly Site Login</h1>
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+      <button type="submit" id="submit-button">Log in</button>
+    </form>
+    <div id="message"></div>
+    <pre id="result" hidden></pre>
+  </div>
+
+<script>
+function hexToBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
+function bytesToHex(bytes) {
+  return Array.from(new Uint8Array(bytes))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function postJson(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.detail || `${response.status} ${response.statusText}`);
+  }
+  return data;
+}
+
+async function login(username, password) {
+  const challengeData = await postJson("/login/challenge", { username });
+
+  const salt = hexToBytes(challengeData.salt);
+  const iterations = challengeData.iterations;
+  const challenge = challengeData.challenge;
+
+  const passwordKey = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
+  );
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    passwordKey,
+    256
+  );
+
+  const hmacKey = await crypto.subtle.importKey(
+    "raw", derivedBits, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", hmacKey, hexToBytes(challenge));
+  const response = bytesToHex(signature);
+
+  const loginData = await postJson("/login/response", { username, challenge, response });
+  return loginData.token;
+}
+
+const form = document.getElementById("login-form");
+const messageEl = document.getElementById("message");
+const resultEl = document.getElementById("result");
+const submitButton = document.getElementById("submit-button");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  messageEl.textContent = "";
+  messageEl.className = "";
+  resultEl.hidden = true;
+  submitButton.disabled = true;
+
+  try {
+    const token = await login(username, password);
+    const whoamiResponse = await fetch("/whoami", { headers: { "X-API-Key": token } });
+    const whoami = await whoamiResponse.json();
+
+    messageEl.textContent = `Welcome, ${whoami.full_name}!`;
+    resultEl.textContent = JSON.stringify({ token, ...whoami }, null, 2);
+    resultEl.hidden = false;
+    form.reset();
+  } catch (error) {
+    messageEl.textContent = error.message;
+    messageEl.className = "error";
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

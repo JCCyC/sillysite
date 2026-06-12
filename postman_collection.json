@@ -38,6 +38,14 @@
             "method": "GET",
             "url": "{{base_url}}/favicon.ico"
           }
+        },
+        {
+          "name": "Login Page",
+          "description": "Serves a login form that implements the login flow in the browser. If a valid X-API-Key/apikey is already supplied, returns the /whoami result directly instead.",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/login.html"
+          }
         }
       ]
     },

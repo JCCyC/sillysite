@@ -12,6 +12,7 @@ A FastAPI app with:
 - A `/config` endpoint (admin-only) listing the `app_config` settings
 - An `/activeusers` endpoint (admin-only) listing active sessions: username, source IP, login
   time, and expiry time
+- A `/login.html` page implementing the login flow in the browser
 - `/favicon.ico`
 
 All endpoints except `/`, `/about`, `/favicon.ico`, and `/login/*` require an `X-API-Key` header,
@@ -42,6 +43,10 @@ challenge and submitting the response, the login fails with "Login timeout".
 On success, the token is printed to stdout and can be used as the `X-API-Key` header. The token
 is only valid from the IP address it was issued to, and expires after `session_ttl_seconds`
 (1 hour by default, configurable in the `app_config` table).
+
+Alternatively, `/login.html` serves a basic login page that performs this flow in the browser
+and displays the resulting `/whoami` info. If you visit it with a valid `X-API-Key`/`apikey`
+already set, it skips the page and returns the `/whoami` result directly.
 
 ## Changing your password
 

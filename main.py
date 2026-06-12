@@ -140,6 +140,16 @@ def favicon():
     return FileResponse("static/favicon.ico")
 
 
+@app.get("/login.html", include_in_schema=False)
+def login_html(
+    user: models.User | None = Depends(auth.get_current_user),
+    session: models.UserSession | None = Depends(auth.get_current_session),
+):
+    if user is not None:
+        return _whoami(user, session)
+    return FileResponse("static/login.html")
+
+
 @app.get("/about")
 def read_about():
     return {"msg": random.choice(ABOUT_MESSAGES)}
@@ -506,16 +516,20 @@ def delete_user(username: str, db: Session = Depends(get_db)):
 # --- Whoami ---
 
 
-@app.get("/whoami", response_model=schemas.WhoAmI)
-def whoami(
-    user: models.User = Depends(require_user),
-    session: models.UserSession | None = Depends(auth.get_current_session),
-):
+def _whoami(user: models.User, session: models.UserSession | None) -> schemas.WhoAmI:
     return schemas.WhoAmI(
         **schemas.User.model_validate(user).model_dump(),
         login_at=session.authenticated_at if session is not None else None,
         session_expires_at=session.expires_at if session is not None else None,
     )
+
+
+@app.get("/whoami", response_model=schemas.WhoAmI)
+def whoami(
+    user: models.User = Depends(require_user),
+    session: models.UserSession | None = Depends(auth.get_current_session),
+):
+    return _whoami(user, session)
 
 
 # --- Logout ---
