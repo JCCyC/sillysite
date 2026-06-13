@@ -139,4 +139,13 @@ or `./run.sh`, which `cd`s to the repo root first.
 .venv/bin/python seed.py
 ```
 
+## Docker deployment
+
+`Dockerfile` builds a single image (based on `debian:stable`) running both
+the API (via `gunicorn` + `uvicorn` workers) and its PostgreSQL database,
+managed by `supervisord`. See `docker/DEPLOY.md` for deployment instructions,
+and `docker/deploy.env.example` for configurable settings (API port,
+optional PostgreSQL port exposure, resource limits, and a database size
+cap).
+
 populates the database with Formula One season data from 2014 through 2025.

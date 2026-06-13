@@ -165,3 +165,18 @@ the new password, and submits those to `/change-password` via that token — ent
 browser, mirroring `changepw.py`. The result is shown as a styled message below the form (green
 on success, red on error). If the request doesn't carry a valid `X-API-Key`/`apikey` (header or
 query param, static or session), it redirects to `/login.html` instead.
+
+## Docker deployment
+
+`Dockerfile` (based on `debian:stable`) packages the API and its PostgreSQL database into a
+single image, started via `docker/entrypoint.sh` and managed by `supervisord`
+(`docker/supervisord.conf`): `postgres`, the API (`gunicorn` with `uvicorn.workers.UvicornWorker`,
+worker count via `WEB_CONCURRENCY`), and `docker/db-size-monitor.sh` (enforces
+`DB_SIZE_LIMIT_MB` by toggling `default_transaction_read_only` on the database). On first run,
+`entrypoint.sh` initializes the PostgreSQL data directory (on the `pgdata` volume), creates the
+`DB_USER`/`DB_NAME` role/database, and generates/persists a random `DB_PASSWORD` and `API_KEY` in
+`/var/lib/sillysite/secrets.env` (on the `state` volume) if not provided. `docker/deploy.sh` (with
+settings from `docker/deploy.env`, see `docker/deploy.env.example`) builds the image and runs the
+container with the configured port mappings (API port, optional PostgreSQL port) and resource
+limits (`--memory`, `--cpus`, falling back to no CPU limit if the host doesn't support it). See
+`docker/DEPLOY.md` for end-user deployment instructions.
