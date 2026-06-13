@@ -64,9 +64,20 @@ the database and secrets persist in the named volumes.
 docker logs -f sillysite
 ```
 
-## Removing everything (including the database)
+## Uninstalling
+
+To stop and remove the container, but keep the database and secrets for a
+future redeploy:
+
+```bash
+docker rm -f sillysite
+```
+
+To remove everything, including the database, generated secrets, and the
+built image:
 
 ```bash
 docker rm -f sillysite
 docker volume rm sillysite_pgdata sillysite_state
+docker image rm sillysite
 ```
