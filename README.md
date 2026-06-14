@@ -1,5 +1,4 @@
 # Silly Site
-Test for website deployment
 
 A FastAPI app with:
 - `/`, which redirects to `/login.html` (passing along the caller's API key as `?apikey=`, if any)
