@@ -573,6 +573,33 @@
           }
         }
       ]
+    },
+    {
+      "name": "Season",
+      "item": [
+        {
+          "name": "Get season",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/season/2024",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "season",
+                "2024"
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }

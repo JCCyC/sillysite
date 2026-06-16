@@ -93,6 +93,14 @@ class GrandPrix(GrandPrixBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class SeasonGrandPrix(BaseModel):
+    sequence_number: int
+    name: str
+    track_name: str
+    winning_driver: str | None = None
+    winning_team: str | None = None
+
+
 class UserCreate(BaseModel):
     username: str
     full_name: str

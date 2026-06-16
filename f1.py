@@ -39,6 +39,35 @@ def read_about():
     return {"msg": random.choice(ABOUT_MESSAGES)}
 
 
+# --- Season ---
+
+
+@router.get(
+    "/season/{year}",
+    response_model=list[schemas.SeasonGrandPrix],
+    dependencies=[Depends(require_user)],
+)
+def get_season(year: int, db: Session = Depends(get_db)):
+    gps = (
+        db.query(models.GrandPrix)
+        .filter(models.GrandPrix.season == year)
+        .order_by(models.GrandPrix.sequence_number)
+        .all()
+    )
+    if not gps:
+        raise HTTPException(status_code=404, detail="Season not found")
+    return [
+        schemas.SeasonGrandPrix(
+            sequence_number=gp.sequence_number,
+            name=gp.name,
+            track_name=gp.track_name,
+            winning_driver=gp.winning_driver.name if gp.winning_driver else None,
+            winning_team=gp.winning_team.name if gp.winning_team else None,
+        )
+        for gp in gps
+    ]
+
+
 # --- Teams ---
 
 
