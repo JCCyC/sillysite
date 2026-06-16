@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# C build artifacts (c/)
+c/*.o
+c/*.a
+c/login
+c/changepw
+c/season
