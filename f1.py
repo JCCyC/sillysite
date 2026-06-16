@@ -1,7 +1,7 @@
 import random
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 import models
 import schemas
@@ -50,6 +50,10 @@ def read_about():
 def get_season(year: int, db: Session = Depends(get_db)):
     gps = (
         db.query(models.GrandPrix)
+        .options(
+            joinedload(models.GrandPrix.winning_driver),
+            joinedload(models.GrandPrix.winning_team),
+        )
         .filter(models.GrandPrix.season == year)
         .order_by(models.GrandPrix.sequence_number)
         .all()
