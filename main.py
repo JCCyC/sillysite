@@ -100,9 +100,12 @@ def _session_cleanup_loop():
         time.sleep(interval_seconds)
 
 
-threading.Thread(target=_session_cleanup_loop, daemon=True).start()
-
 app.include_router(f1.router)
+
+
+@app.on_event("startup")
+async def _start_session_cleanup():
+    threading.Thread(target=_session_cleanup_loop, daemon=True).start()
 
 
 @app.get("/", include_in_schema=False)
