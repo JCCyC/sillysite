@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -11,6 +13,7 @@ DATABASE_URL = (
 engine = create_engine(
     DATABASE_URL,
     connect_args={"options": f"-csearch_path={config.DB_SCHEMA}"},
+    echo=bool(os.getenv("SQL_ECHO")),
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
