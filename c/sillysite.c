@@ -145,7 +145,13 @@ static silly_response_t *http_do(const char *method, const char *url,
     hdrs = curl_slist_append(hdrs, "Content-Type: application/json");
     if (apikey) {
         char hdr[1024];
-        snprintf(hdr, sizeof(hdr), "X-API-Key: %s", apikey);
+        if (snprintf(hdr, sizeof(hdr), "X-API-Key: %s", apikey) >= (int)sizeof(hdr)) {
+            curl_slist_free_all(hdrs);
+            curl_easy_cleanup(curl);
+            free(resp);
+            errno = EINVAL;
+            return NULL;
+        }
         hdrs = curl_slist_append(hdrs, hdr);
     }
 

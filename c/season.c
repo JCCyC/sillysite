@@ -19,7 +19,10 @@ int main(int argc, char *argv[])
     const char *year    = argv[3];
 
     char path[64];
-    snprintf(path, sizeof(path), "/season/%s", year);
+    if (snprintf(path, sizeof(path), "/season/%s", year) >= (int)sizeof(path)) {
+        fprintf(stderr, "Year argument too long\n");
+        return 1;
+    }
 
     silly_response_t *resp = silly_get(baseurl, apikey, path);
     if (!resp) {
