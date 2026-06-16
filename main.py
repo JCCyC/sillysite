@@ -84,23 +84,17 @@ def _ensure_admin_user():
 _ensure_default_config()
 _ensure_admin_user()
 
-def _cleanup_expired_sessions():
-    db = SessionLocal()
-    try:
-        grace_seconds = _get_config_int(db, "session_cleanup_grace_seconds")
-        cutoff = datetime.now(timezone.utc) - timedelta(seconds=grace_seconds)
-        db.query(models.UserSession).filter(models.UserSession.expires_at < cutoff).delete()
-        db.commit()
-    finally:
-        db.close()
-
-
 def _session_cleanup_loop():
     while True:
-        _cleanup_expired_sessions()
         db = SessionLocal()
         try:
+            grace_seconds = _get_config_int(db, "session_cleanup_grace_seconds")
             interval_seconds = _get_config_int(db, "session_cleanup_interval_seconds")
+            cutoff = datetime.now(timezone.utc) - timedelta(seconds=grace_seconds)
+            db.query(models.UserSession).filter(
+                models.UserSession.expires_at < cutoff
+            ).delete(synchronize_session=False)
+            db.commit()
         finally:
             db.close()
         time.sleep(interval_seconds)
