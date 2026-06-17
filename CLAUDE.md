@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a minimal FastAPI app used for testing website deployment. All routes live in `main.py`.
+This is a minimal FastAPI app used for testing website deployment. Core routes (auth, users,
+whoami/logout, config) live in `main.py`; Formula One business logic (CRUD endpoints, `/about`,
+`/season/{year}`) lives in `f1.py`, mounted as an `APIRouter`.
 
 ## Project Stack
 
@@ -27,6 +29,12 @@ explicitly requested).
 After implementing endpoints or features, run tests/verify the change and update docs and
 Postman collection accordingly.
 
+When writing or reviewing client code (Python/C/JS or otherwise) that checks an HTTP response
+status, check against the endpoint's actual documented status rather than assuming `200`: `POST`
+endpoints that create a resource return `201`, `DELETE` endpoints and `POST /change-password`
+return `204` (no body). Prefer accepting the whole 2xx range (or the specific non-200 code that
+endpoint actually returns) over a hardcoded `== 200` check.
+
 ## Git & Deployment
 
 GitHub auth in this environment is unreliable (interactive gh flows and network timeouts fail);
@@ -35,23 +43,24 @@ prepare commits locally and let the user push manually.
 ## Architecture
 
 - `main.py` defines the FastAPI app. `/` redirects (`307`) to `/login.html`, carrying along the
-  caller's `X-API-Key`/`apikey` (header or query param) as an `apikey` query param if present, and
-  `/about` returns `{"msg": "<random message>"}` chosen from a small list of candidate messages.
-  It also defines
-  CRUD endpoints for the Formula One data: `/teams`, `/drivers` (keyed by `id`), `/driver-numbers`
-  (keyed by the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}`
-  (keyed by the composite season/sequence number), CRUD endpoints for `/users`, the
-  `/login/challenge` and `/login/response` endpoints, a `/change-password` endpoint, a `/whoami`
-  endpoint, a `/logout` endpoint, a `/config` endpoint, an `/activeusers` endpoint, a
-  `/login.html` page, a `/whoami.html` page, a `/changepw.html` page, and serves
-  `static/favicon.ico` at `/favicon.ico`. `PUT`
+  caller's `X-API-Key`/`apikey` (header or query param) as an `apikey` query param if present. It
+  also defines CRUD endpoints for `/users`, the `/login/challenge` and `/login/response`
+  endpoints, a `/change-password` endpoint, a `/whoami` endpoint, a `/logout` endpoint, a
+  `/config` endpoint, an `/activeusers` endpoint, a `/login.html` page, a `/whoami.html` page, a
+  `/changepw.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`,
   `session_cleanup_interval_seconds`, `session_cleanup_grace_seconds`) are inserted if missing,
-  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing. A background
-  daemon thread also wakes up every `session_cleanup_interval_seconds` (`app_config`, default 15
-  minutes) and deletes any rows in `sessions` whose `expires_at` is more than
-  `session_cleanup_grace_seconds` (`app_config`, default 1 hour) in the past.
+  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing. An
+  `@app.on_event("startup")` hook starts a background daemon thread that wakes up every
+  `session_cleanup_interval_seconds` (`app_config`, default 15 minutes) and, in a single DB
+  session, reads both config values and deletes any rows in `sessions` whose `expires_at` is more
+  than `session_cleanup_grace_seconds` (`app_config`, default 1 hour) in the past. The thread is
+  started from the startup hook rather than at module level specifically because `uvicorn
+  --reload` imports `main.py` twice (once in the reloader process, once in the worker
+  subprocess) — module-level side effects would start the thread twice, producing duplicate
+  cleanup runs every cycle; the startup hook only fires once, inside the actual ASGI worker.
+  Formula One routes are mounted via `app.include_router(f1.router)` (see `f1.py` below).
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, `/whoami.html`, and `/changepw.html`
@@ -65,6 +74,14 @@ prepare commits locally and let the user push manually.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and
     `GET /activeusers`) requires an admin (`require_admin`).
+- `f1.py` holds all Formula One business logic, as a FastAPI `APIRouter` mounted by `main.py`:
+  `/about` (returns `{"msg": "<random message>"}` chosen from a small list of candidate
+  messages), CRUD endpoints for `/teams`, `/drivers` (keyed by `id`), `/driver-numbers` (keyed by
+  the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}` (keyed by
+  the composite season/sequence number), and `GET /season/{year}` — returns all Grands Prix for
+  that season in order, with the winning driver/team's *names* (not ids), 404 if the season has
+  no races. It uses `joinedload` on `winning_driver`/`winning_team` to fetch each race's data in
+  one query instead of issuing a separate `SELECT` per relationship per race (N+1).
 - `auth.py` resolves the caller's `User` from the `X-API-Key` header or an `apikey` query
   parameter (`resolve_api_key`; if both are present, the request is treated as unauthenticated,
   even if they match): either the static key matching `config.API_KEY` (which maps to the `admin`
@@ -79,7 +96,8 @@ prepare commits locally and let the user push manually.
   `DB_USER`, `DB_PASSWORD`) and the `API_KEY` used for write-endpoint authentication from
   environment variables / a `.env` file (see `.env.example`).
 - `database.py` configures the SQLAlchemy engine/session from the values in `config.py`,
-  connecting to PostgreSQL and setting the schema search path.
+  connecting to PostgreSQL and setting the schema search path. Set `SQL_ECHO=1` in the
+  environment to log every SQL query the engine issues (useful for spotting N+1 queries).
 - `models.py` defines the Formula One data model: `Team`, `Driver`, `DriverNumber`, and
   `GrandPrix`. A `Driver` holds a person's name, nationality, and date of birth; their car number
   for a given season is tracked separately in `DriverNumber` (since drivers can change numbers
@@ -92,8 +110,9 @@ prepare commits locally and let the user push manually.
   `Base.metadata.create_all`.
 - `schemas.py` defines the Pydantic request/response models used by the CRUD endpoints,
   including `*Create` schemas (all fields required, used for `POST`) and `*Update` schemas
-  (all fields optional, used for `PUT` partial updates), plus the `User`/`UserCreate`/`UserUpdate`
-  and login challenge/response schemas.
+  (all fields optional, used for `PUT` partial updates), the `User`/`UserCreate`/`UserUpdate`
+  and login challenge/response schemas, and `SeasonGrandPrix` (the `/season/{year}` response
+  shape: sequence number, name, track name, and winning driver/team *names*).
 - `login.py` is a CLI script (`./login.py <url> <username>`) that prompts for a password,
   performs the challenge/response login flow, and prints the resulting session token to stdout
   (or an error to stderr).
@@ -106,6 +125,14 @@ prepare commits locally and let the user push manually.
   2014 through 2025 (run with `.venv/bin/python seed.py`).
 - `postman_collection.json` is a Postman collection covering all endpoints, with `base_url` and
   `api_key` collection variables for testing the API.
+- `c/` is a C client library (`libsillysite`, built via `make`) plus three CLI programs (`login`,
+  `changepw`, `season`) mirroring `login.py`/`changepw.py`. Uses libcurl, OpenSSL
+  (PBKDF2/HMAC), and cJSON. See `c/README-C.md`.
+- `js/` is a JavaScript client library (`sillysite.js`, a dependency-free UMD module usable from
+  Node via `require` or the browser via `<script>`) plus three Node CLI scripts (`login.js`,
+  `logout.js`, `changepw.js`). In Node it uses the built-in `http`/`https`/`crypto` modules; in
+  the browser it uses `fetch`/`crypto.subtle` (same APIs as `static/login.html`). See
+  `js/README-JS.md`.
 
 ## Login flow
 
