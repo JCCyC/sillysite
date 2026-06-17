@@ -27,7 +27,10 @@ explicitly requested).
 ## Workflow
 
 After implementing endpoints or features, run tests/verify the change and update docs and
-Postman collection accordingly.
+Postman collection accordingly. "Docs" explicitly includes this file (`CLAUDE.md`) — whenever a
+change alters the architecture, an endpoint's behavior, a file's responsibilities, or adds a new
+directory/module, update the relevant `CLAUDE.md` section in the same change, not as a separate
+follow-up later. Treat `CLAUDE.md` drift as a bug, the same way you'd treat a failing test.
 
 When writing or reviewing client code (Python/C/JS or otherwise) that checks an HTTP response
 status, check against the endpoint's actual documented status rather than assuming `200`: `POST`
