@@ -8,6 +8,55 @@ This is a minimal FastAPI app used for testing website deployment. Core routes (
 whoami/logout, config) live in `main.py`; Formula One business logic (CRUD endpoints, `/about`,
 `/season/{year}`) lives in `f1.py`, mounted as an `APIRouter`.
 
+## Adapting this template for a different business
+
+The generic SaaS scaffolding (auth, sessions, users, admin, config, client bindings, test
+framework, Docker deployment) has no Formula One knowledge at all — F1 exists only to give the
+scaffolding something concrete to demonstrate. To adapt this for a different business, replace
+the F1-specific pieces below and leave everything else alone.
+
+**Replace (F1-specific):**
+- `f1.py` — delete the F1 routes and add your own as a new `APIRouter`; mount it in `main.py` the
+  same way (`app.include_router(yourmodule.router)`). Note `/about` currently lives here too —
+  decide whether your replacement keeps a similar endpoint or drops it (see the test gotcha
+  below if you drop it).
+- `models.py` — keep `User`, `UserSession`, `AppConfig`; replace `Team`/`Driver`/`DriverNumber`/
+  `GrandPrix` with your own tables.
+- `schemas.py` — keep the `User*`, login/challenge/response, `ChangePasswordRequest`, `WhoAmI`,
+  and `ActiveUser` schemas; replace the F1 schemas (`Team`, `Driver`, `DriverNumber`, `GrandPrix`,
+  `SeasonGrandPrix`, `WinnerCount`) with your own.
+- `seed.py` — replace with seed data for your own business, or remove (and drop `SEED_DB` support
+  in `docker/entrypoint.sh`) if you don't need seeding.
+- `tests/cases/60_f1.sh` — replace with tests for your own business endpoints.
+- `c/season.c` — the only F1-specific C program (`login`/`changepw` are generic); replace or
+  remove, along with the matching `test_c_season_*` cases inside `tests/cases/95_bindings_c.sh`
+  (the `test_c_build`/`test_c_login_*`/`test_c_changepw_*` cases in that same file are generic
+  and should stay).
+- `postman_collection.json`'s Teams/Drivers/Driver Numbers/Grands Prix/Season folders — replace
+  with requests for your own endpoints.
+- `static/favicon.ico` — cosmetic; swap for your own branding.
+- The F1-specific parts of this file and `README.md` — the `f1.py` architecture description, the
+  Data Conventions section, and the season/winners endpoint docs.
+
+**Test gotcha:** `tests/cases/10_public.sh`'s `test_about_public` expects `GET /about` to return
+200 — but `/about` is defined in `f1.py`, which you're replacing. If your replacement doesn't
+keep an `/about`-equivalent, remove that one test rather than leaving it to fail.
+
+**Leave alone (generic, no F1 knowledge):**
+- `main.py`, `auth.py`, `config.py`, `database.py` — the whole auth/session/user/admin/config
+  system.
+- `login.py`, `changepw.py`, `c/login.c`, `c/changepw.c`, all of `js/sillysite.js` and its three
+  CLI scripts — the challenge/response login flow and change-password flow are business-agnostic.
+- `static/login.html`, `static/whoami.html`, `static/changepw.html`, and `/sillysite.js`.
+- `tests/lib/*`, `tests/run_tests.sh`, `tests/fast_check.sh`, `tests/hook_fast_check.sh`, and
+  `tests/cases/10`/`20`/`30`/`40`/`50`/`70`/`90`/`96`/`97` (plus the non-season cases inside
+  `95_bindings_c.sh`) — the generic test framework and coverage.
+- `Dockerfile`, `docker/*` — the deployment story doesn't know or care what the business logic is.
+
+Suggested mechanism for actually starting a new business from this: mark this repo as a GitHub
+template repository (Settings → Template repository), so new projects start via "Use this
+template" / `gh repo create --template` — a clean, history-less copy, not a fork tied back here.
+
 ## Project Stack
 
 This is a FastAPI (Python) project. Use a virtual environment (venv), and always verify database
