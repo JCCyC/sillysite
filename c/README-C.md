@@ -1,6 +1,6 @@
 # Silly Site C client library
 
-A C library (`libsillysite`) and three command-line programs that interact
+A C library (`libsillysite`) and two command-line programs that interact
 with the Silly Site API.
 
 ## Prerequisites
@@ -18,8 +18,8 @@ cd c/
 make
 ```
 
-This produces `libsillysite.a` and the three programs `login`, `changepw`,
-and `season` in the same directory.
+This produces `libsillysite.a` and the two programs `login` and `changepw`
+in the same directory.
 
 ---
 
@@ -164,10 +164,10 @@ silly_response_t *silly_delete(const char *baseurl, const char *apikey,
 `body` for POST/PUT is a JSON string (or `NULL` for an empty body).
 `apikey` may be `NULL` to send an unauthenticated request.
 
-**Example — fetch a season:**
+**Example — fetch the current user:**
 ```c
 silly_response_t *r = silly_get("http://localhost:8000",
-                                 "mytoken123", "/season/2023");
+                                 "mytoken123", "/whoami");
 if (!r) { perror("silly_get"); exit(1); }
 
 if (r->status == 200) {
@@ -179,13 +179,13 @@ if (r->status == 200) {
 silly_response_free(r);
 ```
 
-**Example — create a team:**
+**Example — create a user:**
 ```c
-const char *body = "{\"name\":\"Test Team\","
-                   "\"country\":\"UK\","
-                   "\"founded_year\":2024}";
+const char *body = "{\"username\":\"alice\","
+                   "\"full_name\":\"Alice Example\","
+                   "\"password\":\"s3cret\"}";
 silly_response_t *r = silly_post("http://localhost:8000",
-                                  "adminkey", "/teams", body);
+                                  "adminkey", "/users", body);
 if (r && r->status == 201)
     printf("Created: %s\n", r->body);
 silly_response_free(r);
@@ -228,26 +228,3 @@ New password:
 Confirm new password:
 Password changed successfully
 ```
-
-### `season`
-
-```
-./season <baseurl> <apikey> <year>
-```
-
-Fetches `/season/<year>` and prints a formatted table of race results with
-driver and team names.
-
-```
-$ ./season http://localhost:8000 mytoken 2023
-Season 2023 results:
-
-  Rd.  Grand Prix                                  Winner                    Team
-  ---  ------------------------------------------  ------------------------  --------------------
-  1    Bahrain Grand Prix                          Max Verstappen            Red Bull Racing
-  2    Saudi Arabian Grand Prix                    Sergio Perez              Red Bull Racing
-  …
-```
-
-Exits with status 1 on error (access denied, unknown season, network
-failure) with a diagnostic message on stderr.

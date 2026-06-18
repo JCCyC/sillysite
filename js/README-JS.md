@@ -69,9 +69,9 @@ SillySite.del(baseUrl, apiKey, path)
   On a transport-level failure (DNS, connection refused, timeout), `status`
   is `0`, `body` is `null`, and `error` holds a description.
 
-**Example — fetch a season:**
+**Example — fetch the current user:**
 ```js
-const resp = await SillySite.get('http://localhost:8000', 'mytoken123', '/season/2023');
+const resp = await SillySite.get('http://localhost:8000', 'mytoken123', '/whoami');
 if (resp.status === 200) {
   console.log(JSON.parse(resp.body));
 } else {
@@ -79,12 +79,12 @@ if (resp.status === 200) {
 }
 ```
 
-**Example — create a team:**
+**Example — create a user:**
 ```js
-const resp = await SillySite.post('http://localhost:8000', 'adminkey', '/teams', {
-  name: 'Test Team',
-  country: 'UK',
-  founded_year: 2024,
+const resp = await SillySite.post('http://localhost:8000', 'adminkey', '/users', {
+  username: 'alice',
+  full_name: 'Alice Example',
+  password: 's3cret',
 });
 if (resp.status === 201) console.log('Created:', resp.body);
 ```

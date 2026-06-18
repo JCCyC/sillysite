@@ -37,7 +37,11 @@
       "Bash(bash -n tests/lib/docker.sh)",
       "Bash(git mv *)",
       "Bash(grep -n \"f1\\\\.py\\\\|f1\\\\.router\\\\|\\\\`f1\\\\`\" /home/jcastro/src/claudetest/sillysite/CLAUDE.md)",
-      "Bash(grep -n \"f1\\\\.py\\\\|f1\\\\.router\\\\|60_f1\\\\|\\\\`f1\\\\`\" /home/jcastro/src/claudetest/sillysite/CLAUDE.md)"
+      "Bash(grep -n \"f1\\\\.py\\\\|f1\\\\.router\\\\|60_f1\\\\|\\\\`f1\\\\`\" /home/jcastro/src/claudetest/sillysite/CLAUDE.md)",
+      "Bash(.venv/bin/python3 -c ' *)",
+      "Bash(git rm *)",
+      "Bash(bash -n tests/cases/95_bindings_c.sh)",
+      "Bash(make clean *)"
     ]
   }
 }

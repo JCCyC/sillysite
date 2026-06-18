@@ -228,7 +228,6 @@ c/*.o
 c/*.a
 c/login
 c/changepw
-c/season
 
 # Test suite generated artifacts (tests/)
 tests/report.txt

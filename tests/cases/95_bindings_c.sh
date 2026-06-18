@@ -4,7 +4,7 @@ test_c_build() {
     (cd "$PROJECT_ROOT/c" && make clean > /dev/null 2>&1 && make)
 }
 register_test test_c_build "C client builds cleanly via make" \
-    "make clean && make in c/ succeeds, producing libsillysite.a, login, changepw, and season"
+    "make clean && make in c/ succeeds, producing libsillysite.a, login, and changepw"
 
 test_c_login_success() {
     [ -x "$PROJECT_ROOT/c/login" ] || { echo "c/login missing, did the build fail?"; return 1; }
@@ -53,25 +53,3 @@ test_c_changepw_success() {
 }
 register_test test_c_changepw_success "c/changepw changes the password" \
     "The C changepw program, driven over a pty through all three prompts, exits 0 and the new password then works"
-
-test_c_season_known_year() {
-    [ -x "$PROJECT_ROOT/c/season" ] || { echo "c/season missing, did the build fail?"; return 1; }
-    local out
-    out="$("$PROJECT_ROOT/c/season" "$BASE_URL" "$ADMIN_KEY" 2014)"
-    local rc=$?
-    [ "$rc" -eq 0 ] || { echo "$out"; return 1; }
-    assert_contains "$out" "Season 2014 results:"
-}
-register_test test_c_season_known_year "c/season prints a season's races" \
-    "The C season program prints a results table for a season that has races"
-
-test_c_season_unknown_year() {
-    [ -x "$PROJECT_ROOT/c/season" ] || { echo "c/season missing, did the build fail?"; return 1; }
-    local out
-    out="$("$PROJECT_ROOT/c/season" "$BASE_URL" "$ADMIN_KEY" 1899 2>&1)"
-    local rc=$?
-    [ "$rc" -ne 0 ] || { echo "c/season unexpectedly succeeded: $out"; return 1; }
-    assert_contains "$out" "No data found for season"
-}
-register_test test_c_season_unknown_year "c/season reports unknown seasons" \
-    "The C season program exits non-zero with \"No data found for season\" for a year with no races"

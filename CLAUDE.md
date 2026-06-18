@@ -29,10 +29,6 @@ not the file itself.
 - `seed.py` — replace with seed data for your own business, or remove (and drop `SEED_DB` support
   in `docker/entrypoint.sh`) if you don't need seeding.
 - `tests/cases/60_business.sh` — replace with tests for your own business endpoints.
-- `c/season.c` — the only F1-specific C program (`login`/`changepw` are generic); replace or
-  remove, along with the matching `test_c_season_*` cases inside `tests/cases/95_bindings_c.sh`
-  (the `test_c_build`/`test_c_login_*`/`test_c_changepw_*` cases in that same file are generic
-  and should stay).
 - `postman_collection.json`'s Teams/Drivers/Driver Numbers/Grands Prix/Season folders — replace
   with requests for your own endpoints.
 - `static/favicon.ico` — cosmetic; swap for your own branding.
@@ -46,12 +42,12 @@ not the file itself.
 **Leave alone (generic, no F1 knowledge):**
 - `main.py`, `auth.py`, `config.py`, `database.py` — the whole auth/session/user/admin/config
   system.
-- `login.py`, `changepw.py`, `c/login.c`, `c/changepw.c`, all of `js/sillysite.js` and its three
-  CLI scripts — the challenge/response login flow and change-password flow are business-agnostic.
+- `login.py`, `changepw.py`, all of `c/` (`login`/`changepw` only — deliberately no
+  business-specific programs), all of `js/sillysite.js` and its three CLI scripts — the
+  challenge/response login flow and change-password flow are business-agnostic.
 - `static/login.html`, `static/whoami.html`, `static/changepw.html`, and `/sillysite.js`.
-- `tests/lib/*`, `tests/run_tests.sh`, `tests/fast_check.sh`, `tests/hook_fast_check.sh`, and
-  `tests/cases/10`/`20`/`30`/`40`/`50`/`70`/`90`/`96`/`97` (plus the non-season cases inside
-  `95_bindings_c.sh`) — the generic test framework and coverage.
+- `tests/lib/*`, `tests/run_tests.sh`, `tests/fast_check.sh`, `tests/hook_fast_check.sh`, and all
+  of `tests/cases/` except `60_business.sh` — the generic test framework and coverage.
 - `Dockerfile`, `docker/*` — the deployment story doesn't know or care what the business logic is.
 
 Suggested mechanism for actually starting a new business from this: mark this repo as a GitHub
@@ -218,9 +214,9 @@ prepare commits locally and let the user push manually.
   2014 through 2025 (run with `.venv/bin/python seed.py`).
 - `postman_collection.json` is a Postman collection covering all endpoints, with `base_url` and
   `api_key` collection variables for testing the API.
-- `c/` is a C client library (`libsillysite`, built via `make`) plus three CLI programs (`login`,
-  `changepw`, `season`) mirroring `login.py`/`changepw.py`. Uses libcurl, OpenSSL
-  (PBKDF2/HMAC), and cJSON. See `c/README-C.md`.
+- `c/` is a C client library (`libsillysite`, built via `make`) plus two CLI programs (`login`,
+  `changepw`) mirroring `login.py`/`changepw.py` — deliberately no business-specific programs.
+  Uses libcurl, OpenSSL (PBKDF2/HMAC), and cJSON. See `c/README-C.md`.
 - `js/` is a JavaScript client library (`sillysite.js`, a dependency-free UMD module usable from
   Node via `require` or the browser via `<script>`) plus three Node CLI scripts (`login.js`,
   `logout.js`, `changepw.js`). In Node it uses the built-in `http`/`https`/`crypto` modules; in
@@ -232,7 +228,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, the C and JS client bindings, and the static browser pages (78 tests as of this
+scripts, the C and JS client bindings, and the static browser pages (76 tests as of this
 writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
