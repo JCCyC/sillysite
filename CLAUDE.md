@@ -50,9 +50,9 @@ not the file itself.
   of `tests/cases/` except `60_business.sh` — the generic test framework and coverage.
 - `Dockerfile`, `docker/*` — the deployment story doesn't know or care what the business logic is.
 
-Suggested mechanism for actually starting a new business from this: mark this repo as a GitHub
-template repository (Settings → Template repository), so new projects start via "Use this
-template" / `gh repo create --template` — a clean, history-less copy, not a fork tied back here.
+This repo is marked as a GitHub template repository (Settings → Template repository), so new
+businesses should start via "Use this template" / `gh repo create --template` — a clean,
+history-less copy, not a fork tied back here.
 
 ## Project Stack
 
