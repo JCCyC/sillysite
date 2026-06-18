@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jobs)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('postman_collection.json'\\)\\); print\\([i['name'] for i in d['item']]\\)\")",
+      "Bash(dpkg -l libcurl4-openssl-dev libssl-dev libcjson-dev)",
+      "Bash(awk '{print $2}')",
+      "Bash(pkg-config --modversion libcurl openssl libcjson)",
+      "Bash(make)",
+      "Bash(make season *)",
+      "Bash(npm --version)",
+      "Bash(node -e ' *)",
+      "Bash(node -c readpass.js)",
+      "Bash(node login.js)",
+      "Bash(node changepw.js)",
+      "Bash(node logout.js)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(jq --version)",
+      "Bash(python3 -c ' *)",
+      "Bash(docker run *)",
+      "Bash(./tests/run_tests.sh)",
+      "Bash(git check-ignore *)",
+      "Bash(tty)",
+      "Bash(bash -n tests/run_tests.sh)",
+      "Bash(docker rmi *)",
+      "Bash(bash -n tests/fast_check.sh)",
+      "Bash(bash -n tests/fast_check.sh tests/lib/docker.sh)",
+      "Bash(git checkout *)",
+      "Bash(tests/hook_fast_check.sh)",
+      "Bash(bash -n tests/cases/60_f1.sh)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.json'\\)\\); json.load\\(open\\('.claude/settings.local.json'\\)\\)\")"
+    ]
+  }
+}

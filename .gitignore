@@ -218,6 +218,11 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Claude Code personal settings (machine-specific permissions, hooks tied
+# to this checkout's absolute path) -- .claude/settings.json is team-wide
+# and is tracked.
+.claude/settings.local.json
+
 # C build artifacts (c/)
 c/*.o
 c/*.a
