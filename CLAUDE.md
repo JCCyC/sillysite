@@ -160,7 +160,36 @@ clients as subprocesses). The C client reads passwords from `/dev/tty`, not stdi
 non-interactively needs a real controlling terminal — `tests/lib/pty_drive.py` spawns it under a
 pty and feeds scripted prompt/answer pairs at the right time (sending too early loses the input,
 since the C client's `tcsetattr(..., TCSAFLUSH, ...)` when entering no-echo mode discards
-whatever's already queued).
+whatever's already queued). Piping a password into `login.py`/`changepw.py` (used internally by
+several test cases as a login helper, and tested directly themselves) needs `detached` (in
+`tests/lib/proc.sh`, a thin `setsid` wrapper): Python's `getpass.getpass()` prefers `/dev/tty` over
+stdin whenever a controlling terminal exists, so without it, running the suite from an interactive
+shell makes those calls silently ignore the piped password and block on a real, unattended prompt
+instead.
+
+### Fast check (`tests/fast_check.sh`)
+
+A lighter, much faster alternative to `tests/run_tests.sh` for everyday iteration: it reuses a
+persistent Postgres-only container (`sillysite-fastdb`, built from the same image but with
+supervisord/gunicorn skipped in favor of running Postgres directly, seeded once and left running
+across calls) and runs the API natively via the project's own venv (`.venv/bin/uvicorn`) straight
+from the current source tree — no image rebuild, no reseeding — against the pure-API test cases
+only (`tests/cases/10`–`70`; the Python-script and C/JS-binding cases are skipped, since they add
+subprocess overhead and rarely break from typical app-code edits). Takes a few seconds once the
+fastdb container exists, versus minutes for the full suite. It is *not* a substitute for
+`tests/run_tests.sh` — that remains the authoritative, full-coverage check to run before
+considering a feature done. The fastdb container's data isn't reset between calls, so harmless
+test rows accumulate over time; `docker rm -f -v sillysite-fastdb` to start clean.
+
+`tests/hook_fast_check.sh` wraps it for automatic use: it hashes a fixed list of watched app files
+(`main.py`, `f1.py`, `auth.py`, `config.py`, `database.py`, `models.py`, `schemas.py`) and only
+actually runs `fast_check.sh` if that hash changed since the last check (tracked in
+`tests/.fast_check_hash`), so it's a no-op on turns that didn't touch app code. It stays silent on
+a pass, and on a failure prints a `systemMessage` JSON line (pass/fail counts, pointers to
+`tests/fast_report.txt` and the full suite) — it never blocks the turn from ending. This is wired
+up as an async `Stop` hook in `.claude/settings.local.json` (personal/untracked, not the committed
+`.claude/settings.json` — the hook is a local convenience, not a team-wide requirement; the
+underlying scripts it calls are committed and shared either way).
 
 ## Login flow
 

@@ -167,6 +167,12 @@ left running too, and the next run will refuse to start until you remove it by h
 docker rm -f -v sillysite-test
 ```
 
+For everyday iteration, `tests/fast_check.sh` runs a much faster subset (pure API tests only,
+against a reused Postgres container and the venv's own `uvicorn` — no image rebuild or reseed) in
+a few seconds instead of minutes. It's not a replacement for the full suite, just a quick sanity
+check; see `CLAUDE.md` for how it's also wired up to run automatically (and flag failures) after
+turns that touch app code.
+
 ## Docker deployment
 
 `Dockerfile` builds a single image (based on `debian:stable`) running both

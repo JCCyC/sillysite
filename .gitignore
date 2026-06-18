@@ -228,3 +228,6 @@ c/season
 # Test suite generated artifacts (tests/)
 tests/report.txt
 tests/build.log
+tests/fast_report.txt
+tests/.fast_check_hash
+tests/.fastdb_port

@@ -4,6 +4,10 @@
 IMAGE_NAME="sillysite-test"
 CONTAINER_NAME="sillysite-test"
 DB_NAME_TEST="sillysite"
+# Which container db_set_config/db_get_config target. Defaults to the full
+# suite's container; fast_check.sh points this at the fastdb container
+# instead after sourcing lib/fastdb.sh.
+DB_CONTAINER="$CONTAINER_NAME"
 
 preflight_checks() {
     local missing=()
@@ -95,13 +99,13 @@ wait_for_healthy() {
 
 # db_set_config <key> <value>
 db_set_config() {
-    docker exec "$CONTAINER_NAME" gosu postgres psql -d "$DB_NAME_TEST" -c \
+    docker exec "$DB_CONTAINER" gosu postgres psql -d "$DB_NAME_TEST" -c \
         "UPDATE app_config SET value='$2' WHERE key='$1';" > /dev/null
 }
 
 # db_get_config <key>
 db_get_config() {
-    docker exec "$CONTAINER_NAME" gosu postgres psql -d "$DB_NAME_TEST" -t -A -c \
+    docker exec "$DB_CONTAINER" gosu postgres psql -d "$DB_NAME_TEST" -t -A -c \
         "SELECT value FROM app_config WHERE key='$1';"
 }
 
