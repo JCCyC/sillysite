@@ -137,6 +137,27 @@ prepare commits locally and let the user push manually.
   the browser it uses `fetch`/`crypto.subtle` (same APIs as `static/login.html`). See
   `js/README-JS.md`.
 
+## Tests
+
+`tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
+scripts, and the C and JS client bindings (72 tests as of this writing). Run it with no
+arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
+`SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
+against that container, and writes a full report to `tests/report.txt` (live progress also
+prints to the terminal as `#N (short description)... PASS`/`FAIL`). On success it removes the
+container and image it created; on failure it leaves them running for post-mortem (`docker
+logs`/`docker exec`) and refuses to start a new run while a same-named leftover container exists,
+to avoid clobbering that post-mortem state. Test cases live in `tests/cases/*.sh` (sourced in
+order; each calls `register_test` with a function, a short description, and a longer one), backed
+by shared helpers in `tests/lib/`: `framework.sh` (registry/runner/assertions), `api.sh`
+(HTTP + JSON helpers, user/login helpers), `docker.sh` (image/container lifecycle, `app_config`
+DB tweaks for the login/change-password timeout tests), and `proc.sh` (driving the Python/C/JS
+clients as subprocesses). The C client reads passwords from `/dev/tty`, not stdin, so driving it
+non-interactively needs a real controlling terminal — `tests/lib/pty_drive.py` spawns it under a
+pty and feeds scripted prompt/answer pairs at the right time (sending too early loses the input,
+since the C client's `tcsetattr(..., TCSAFLUSH, ...)` when entering no-echo mode discards
+whatever's already queued).
+
 ## Login flow
 
 1. `POST /login/challenge` with `{"username": ...}` returns a one-time `challenge`, the user's
