@@ -32,6 +32,15 @@ change alters the architecture, an endpoint's behavior, a file's responsibilitie
 directory/module, update the relevant `CLAUDE.md` section in the same change, not as a separate
 follow-up later. Treat `CLAUDE.md` drift as a bug, the same way you'd treat a failing test.
 
+This also applies to the test suite (`tests/`): whenever a change adds an endpoint, changes an
+endpoint's behavior or status code, or adds/changes a utility script or client binding, add or
+update the corresponding `tests/cases/*.sh` test(s) in the same change — not as a follow-up, and
+not only when explicitly asked. A passing suite that doesn't actually cover the new behavior is
+worse than an honestly failing one. If the change touches one of the files `tests/hook_fast_check.sh`
+watches (`main.py`, `f1.py`, `auth.py`, `config.py`, `database.py`, `models.py`, `schemas.py`),
+new pure-API tests belong in `tests/cases/10`–`70` so they're covered by the fast check too, not
+only the full suite.
+
 When writing or reviewing client code (Python/C/JS or otherwise) that checks an HTTP response
 status, check against the endpoint's actual documented status rather than assuming `200`: `POST`
 endpoints that create a resource return `201`, `DELETE` endpoints and `POST /change-password`
