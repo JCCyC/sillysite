@@ -1,6 +1,10 @@
 # Silly Site
 
-A FastAPI app with:
+A FastAPI app meant to double as a template: the auth/session/user/admin scaffolding has no
+knowledge of Formula One at all, which is just the example business logic demonstrating it. See
+"Adapting this template for a different business" in `CLAUDE.md` for what to swap out.
+
+It has:
 - `/`, which redirects to `/login.html` (passing along the caller's API key as `?apikey=`, if any)
 - `/about`, which returns `{"msg": "<random message>"}`
 - CRUD endpoints for Formula One data: `/teams`, `/drivers`, `/driver-numbers`, and
