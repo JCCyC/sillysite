@@ -160,6 +160,13 @@ Python scripts, C and JS bindings) against it — printing live progress and wri
 to `tests/report.txt`. Docker objects are cleaned up automatically on success, or left running for
 post-mortem inspection on failure.
 
+If a run is interrupted (Ctrl-C, a crash, or a hang) instead of failing cleanly, the container is
+left running too, and the next run will refuse to start until you remove it by hand:
+
+```bash
+docker rm -f -v sillysite-test
+```
+
 ## Docker deployment
 
 `Dockerfile` builds a single image (based on `debian:stable`) running both

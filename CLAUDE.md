@@ -147,7 +147,11 @@ against that container, and writes a full report to `tests/report.txt` (live pro
 prints to the terminal as `#N (short description)... PASS`/`FAIL`). On success it removes the
 container and image it created; on failure it leaves them running for post-mortem (`docker
 logs`/`docker exec`) and refuses to start a new run while a same-named leftover container exists,
-to avoid clobbering that post-mortem state. Test cases live in `tests/cases/*.sh` (sourced in
+to avoid clobbering that post-mortem state. The same applies if the run is interrupted (Ctrl-C,
+crash, or a hang) before it reaches that cleanup-or-postmortem step — the container is left
+running either way, and the next run will refuse to start until it's removed by hand:
+`docker rm -f -v sillysite-test` (add `docker rmi sillysite-test` to also drop the image). Test
+cases live in `tests/cases/*.sh` (sourced in
 order; each calls `register_test` with a function, a short description, and a longer one), backed
 by shared helpers in `tests/lib/`: `framework.sh` (registry/runner/assertions), `api.sh`
 (HTTP + JSON helpers, user/login helpers), `docker.sh` (image/container lifecycle, `app_config`

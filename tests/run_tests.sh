@@ -9,6 +9,11 @@
 # code is 0. On failure, the container and image are left running for
 # post-mortem (docker logs / docker exec), the exit code is 1, and a full
 # report is written to tests/report.txt regardless of outcome.
+#
+# If a run is interrupted (Ctrl-C, a crash, or a hang) rather than failing
+# cleanly, the container is left running the same way, and the next run
+# will refuse to start until you remove it by hand:
+#   docker rm -f -v sillysite-test
 set -uo pipefail
 
 TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
