@@ -47,6 +47,16 @@ endpoints that create a resource return `201`, `DELETE` endpoints and `POST /cha
 return `204` (no body). Prefer accepting the whole 2xx range (or the specific non-200 code that
 endpoint actually returns) over a hardcoded `== 200` check.
 
+Route registration order should never matter — when adding a path parameter, use the narrowest
+Starlette converter the value's type actually supports (`{id:int}`, `{id:uuid}`, etc.) rather than
+a bare `{name}`, so a literal sibling route (e.g. `/drivers/winners` next to
+`/drivers/{driver_id}`) can never be shadowed regardless of which is registered first — see
+`f1.py`. This isn't fully achievable for string-typed parameters with no narrower natural type
+(`/users/{username}` in `main.py`, since usernames have no fixed format to constrain): there's
+currently no literal route under `/users/` for it to collide with, but if one is ever added,
+register it before `/users/{username}` and double-check for this exact class of shadowing, since
+order is the only lever available there.
+
 ## Git & Deployment
 
 GitHub auth in this environment is unreliable (interactive gh flows and network timeouts fail);
