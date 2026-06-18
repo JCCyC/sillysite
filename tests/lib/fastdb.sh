@@ -37,10 +37,20 @@ ensure_fastdb_running() {
         "$IMAGE_NAME" \
         bash -c 'exec gosu postgres "$PG_BIN/postgres" -D "$PGDATA"' > /dev/null
 
+    # entrypoint.sh briefly runs its own temporary Postgres instance during
+    # init/seed before stopping it and handing off to the command above --
+    # pg_isready can succeed against that one moments before it shuts down.
+    # Require two consecutive successes, a beat apart, before trusting it.
+    local consecutive_ok=0
     local deadline=$((SECONDS + 90))
     while [ "$SECONDS" -lt "$deadline" ]; do
         if pg_isready -h 127.0.0.1 -p "$FASTDB_PORT" > /dev/null 2>&1; then
-            return 0
+            consecutive_ok=$((consecutive_ok + 1))
+            if [ "$consecutive_ok" -ge 2 ]; then
+                return 0
+            fi
+        else
+            consecutive_ok=0
         fi
         if ! docker ps --format '{{.Names}}' | grep -qx "$FASTDB_CONTAINER"; then
             echo "fastdb container exited unexpectedly. Logs:" >&2

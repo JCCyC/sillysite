@@ -93,6 +93,19 @@ assert by_id[b]['wins'] == 1, f\"team B wins: expected 1, got {by_id[b]['wins']}
 ids = [r['id'] for r in rows]
 assert ids.index(a) < ids.index(b), 'team A (2 wins) should rank above team B (1 win)'
 " "$BODY" "$team_a" "$team_b" "$team_c"
+    local rc=$?
+
+    # Clean up so reruns against a persistent DB (the fast check's
+    # container) don't collide with these fixed season/sequence_number
+    # values. Grands-prix first: they FK-reference the teams.
+    api DELETE /grands-prix/1999/93 "$ADMIN_KEY"
+    api DELETE /grands-prix/1999/94 "$ADMIN_KEY"
+    api DELETE /grands-prix/1999/95 "$ADMIN_KEY"
+    api DELETE "/teams/$team_a" "$ADMIN_KEY"
+    api DELETE "/teams/$team_b" "$ADMIN_KEY"
+    api DELETE "/teams/$team_c" "$ADMIN_KEY"
+
+    return "$rc"
 }
 register_test test_team_winners "team winners are ranked by win count" \
     "GET /teams/winners orders teams by total wins descending, omitting teams with zero wins"
@@ -155,6 +168,19 @@ assert by_id[b]['wins'] == 1, f\"driver B wins: expected 1, got {by_id[b]['wins'
 ids = [r['id'] for r in rows]
 assert ids.index(a) < ids.index(b), 'driver A (2 wins) should rank above driver B (1 win)'
 " "$BODY" "$driver_a" "$driver_b" "$driver_c"
+    local rc=$?
+
+    # Clean up so reruns against a persistent DB (the fast check's
+    # container) don't collide with these fixed season/sequence_number
+    # values. Grands-prix first: they FK-reference the drivers.
+    api DELETE /grands-prix/1999/90 "$ADMIN_KEY"
+    api DELETE /grands-prix/1999/91 "$ADMIN_KEY"
+    api DELETE /grands-prix/1999/92 "$ADMIN_KEY"
+    api DELETE "/drivers/$driver_a" "$ADMIN_KEY"
+    api DELETE "/drivers/$driver_b" "$ADMIN_KEY"
+    api DELETE "/drivers/$driver_c" "$ADMIN_KEY"
+
+    return "$rc"
 }
 register_test test_driver_winners "driver winners are ranked by win count" \
     "GET /drivers/winners orders drivers by total wins descending, omitting drivers with zero wins"
