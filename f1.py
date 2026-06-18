@@ -44,7 +44,7 @@ def read_about():
 
 
 @router.get(
-    "/season/{year}",
+    "/season/{year:int}",
     response_model=list[schemas.SeasonGrandPrix],
     dependencies=[Depends(require_user)],
 )
@@ -106,7 +106,7 @@ def get_team_winners(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/teams/{team_id}",
+    "/teams/{team_id:int}",
     response_model=schemas.Team,
     dependencies=[Depends(require_user)],
 )
@@ -132,7 +132,7 @@ def create_team(team: schemas.TeamCreate, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/teams/{team_id}",
+    "/teams/{team_id:int}",
     response_model=schemas.Team,
     dependencies=[Depends(require_admin)],
 )
@@ -148,7 +148,7 @@ def update_team(team_id: int, team: schemas.TeamUpdate, db: Session = Depends(ge
 
 
 @router.delete(
-    "/teams/{team_id}",
+    "/teams/{team_id:int}",
     status_code=204,
     dependencies=[Depends(require_admin)],
 )
@@ -193,7 +193,7 @@ def get_driver_winners(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/drivers/{driver_id}",
+    "/drivers/{driver_id:int}",
     response_model=schemas.Driver,
     dependencies=[Depends(require_user)],
 )
@@ -219,7 +219,7 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/drivers/{driver_id}",
+    "/drivers/{driver_id:int}",
     response_model=schemas.Driver,
     dependencies=[Depends(require_admin)],
 )
@@ -237,7 +237,7 @@ def update_driver(
 
 
 @router.delete(
-    "/drivers/{driver_id}",
+    "/drivers/{driver_id:int}",
     status_code=204,
     dependencies=[Depends(require_admin)],
 )
@@ -262,7 +262,7 @@ def list_driver_numbers(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/driver-numbers/{driver_id}/{season}",
+    "/driver-numbers/{driver_id:int}/{season:int}",
     response_model=schemas.DriverNumber,
     dependencies=[Depends(require_user)],
 )
@@ -290,7 +290,7 @@ def create_driver_number(
 
 
 @router.put(
-    "/driver-numbers/{driver_id}/{season}",
+    "/driver-numbers/{driver_id:int}/{season:int}",
     response_model=schemas.DriverNumber,
     dependencies=[Depends(require_admin)],
 )
@@ -311,7 +311,7 @@ def update_driver_number(
 
 
 @router.delete(
-    "/driver-numbers/{driver_id}/{season}",
+    "/driver-numbers/{driver_id:int}/{season:int}",
     status_code=204,
     dependencies=[Depends(require_admin)],
 )
@@ -336,7 +336,7 @@ def list_grands_prix(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/grands-prix/{season}/{sequence_number}",
+    "/grands-prix/{season:int}/{sequence_number:int}",
     response_model=schemas.GrandPrix,
     dependencies=[Depends(require_user)],
 )
@@ -362,7 +362,7 @@ def create_grand_prix(gp: schemas.GrandPrixCreate, db: Session = Depends(get_db)
 
 
 @router.put(
-    "/grands-prix/{season}/{sequence_number}",
+    "/grands-prix/{season:int}/{sequence_number:int}",
     response_model=schemas.GrandPrix,
     dependencies=[Depends(require_admin)],
 )
@@ -383,7 +383,7 @@ def update_grand_prix(
 
 
 @router.delete(
-    "/grands-prix/{season}/{sequence_number}",
+    "/grands-prix/{season:int}/{sequence_number:int}",
     status_code=204,
     dependencies=[Depends(require_admin)],
 )

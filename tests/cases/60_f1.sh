@@ -56,6 +56,13 @@ test_teams_get_unknown() {
 register_test test_teams_get_unknown "unknown team id is a 404" \
     "GET /teams/{id} for an id that doesn't exist returns 404"
 
+test_teams_get_non_numeric_id() {
+    api GET /teams/not-a-number "$ADMIN_KEY"
+    assert_eq 404 "$STATUS" "status"
+}
+register_test test_teams_get_non_numeric_id "non-numeric team id is a 404" \
+    "GET /teams/{id} with a non-numeric id 404s via route matching (the :int path converter), not 422 validation -- and isn't shadowed by /teams/winners"
+
 test_team_winners() {
     api POST /teams "$ADMIN_KEY" '{"name":"Winner Team A","country":"Testland","founded_year":2000}'
     [ "$STATUS" = "201" ] || { echo "create team A failed: $STATUS $BODY"; return 1; }

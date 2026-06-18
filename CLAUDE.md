@@ -103,11 +103,13 @@ prepare commits locally and let the user push manually.
   /drivers/winners` and `GET /teams/winners` return drivers/teams that have won at least one
   Grand Prix (across all seasons), each as `{"id", "name", "wins"}`, ordered by `wins` descending
   (ties broken alphabetically by name); winless drivers/teams are omitted, which falls out
-  naturally from an inner join against `grands_prix` rather than needing an explicit filter. Both
-  are registered before their `/{id}` counterparts (`/drivers/{driver_id}`, `/teams/{team_id}`),
-  since FastAPI matches routes in registration order and a literal path registered after a
-  parameterized one would never be reached — `/drivers/winners` would instead 422 trying to
-  parse `"winners"` as `driver_id: int`.
+  naturally from an inner join against `grands_prix` rather than needing an explicit filter. Every
+  numeric path parameter in this file (`{team_id:int}`, `{driver_id:int}`, `{season:int}`,
+  `{sequence_number:int}`, `{year:int}`) uses Starlette's `:int` path converter rather than a bare
+  `{name}`, which constrains route *matching* itself to digit-only segments — not just Pydantic
+  validation after the fact — so a literal sibling route like `/drivers/winners` is never shadowed
+  by `/drivers/{driver_id:int}` regardless of registration order (a non-numeric segment like
+  `/drivers/abc` now 404s rather than 422, since it never matches that route at all).
 - `auth.py` resolves the caller's `User` from the `X-API-Key` header or an `apikey` query
   parameter (`resolve_api_key`; if both are present, the request is treated as unauthenticated,
   even if they match): either the static key matching `config.API_KEY` (which maps to the `admin`
@@ -163,7 +165,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, and the C and JS client bindings (76 tests as of this writing). Run it with no
+scripts, and the C and JS client bindings (77 tests as of this writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
 against that container, and writes a full report to `tests/report.txt` (live progress also
