@@ -156,8 +156,9 @@ tests/run_tests.sh
 ```
 
 Builds a fresh Docker image, runs it as a seeded container, and runs the full test suite (API,
-Python scripts, C and JS bindings) against it — printing live progress and writing a full report
-to `tests/report.txt`. Docker objects are cleaned up automatically on success, or left running for
+Python scripts, C and JS bindings, and the static browser pages via a real headless Chrome —
+`chromedriver` required) against it — printing live progress and writing a full report to
+`tests/report.txt`. Docker objects are cleaned up automatically on success, or left running for
 post-mortem inspection on failure.
 
 If a run is interrupted (Ctrl-C, a crash, or a hang) instead of failing cleanly, the container is

@@ -41,6 +41,13 @@
           }
         },
         {
+          "name": "Sillysite JS",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/sillysite.js"
+          }
+        },
+        {
           "name": "Login Page",
           "description": "Serves a login form that implements the login flow in the browser. If a valid X-API-Key/apikey is already supplied, redirects to /whoami.html with that key instead.",
           "request": {

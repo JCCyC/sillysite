@@ -11,7 +11,7 @@ DB_CONTAINER="$CONTAINER_NAME"
 
 preflight_checks() {
     local missing=()
-    for bin in docker curl python3 node make cc; do
+    for bin in docker curl python3 node make cc chromedriver; do
         command -v "$bin" >/dev/null 2>&1 || missing+=("$bin")
     done
     if [ "${#missing[@]}" -gt 0 ]; then

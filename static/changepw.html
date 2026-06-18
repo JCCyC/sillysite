@@ -98,65 +98,8 @@
     <div id="message"></div>
   </div>
 
+<script src="/sillysite.js"></script>
 <script>
-const PBKDF2_ITERATIONS = 200000;
-const SALT_BYTES = 16;
-
-function hexToBytes(hex) {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-  }
-  return bytes;
-}
-
-function bytesToHex(bytes) {
-  return Array.from(new Uint8Array(bytes))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function postJson(url, body, apikey) {
-  const headers = { "Content-Type": "application/json" };
-  if (apikey) headers["X-API-Key"] = apikey;
-  const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.detail || `${response.status} ${response.statusText}`);
-  }
-  return data;
-}
-
-async function deriveKey(password, salt, iterations) {
-  const passwordKey = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
-  );
-  return crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
-    passwordKey,
-    256
-  );
-}
-
-async function login(username, password) {
-  const challengeData = await postJson("/login/challenge", { username });
-
-  const salt = hexToBytes(challengeData.salt);
-  const iterations = challengeData.iterations;
-  const challenge = challengeData.challenge;
-
-  const derivedBits = await deriveKey(password, salt, iterations);
-
-  const hmacKey = await crypto.subtle.importKey(
-    "raw", derivedBits, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", hmacKey, hexToBytes(challenge));
-  const response = bytesToHex(signature);
-
-  const loginData = await postJson("/login/response", { username, challenge, response });
-  return loginData.token;
-}
-
 const apikey = new URLSearchParams(window.location.search).get("apikey");
 const form = document.getElementById("changepw-form");
 const messageEl = document.getElementById("message");
@@ -166,10 +109,9 @@ let username = null;
 
 (async () => {
   try {
-    const response = await fetch("/whoami", { headers: apikey ? { "X-API-Key": apikey } : {} });
-    const whoami = await response.json();
-    if (response.ok) {
-      username = whoami.username;
+    const resp = await SillySite.get(window.location.origin, apikey, "/whoami");
+    if (resp.status === 200) {
+      username = JSON.parse(resp.body).username;
       document.getElementById("title").textContent = `Password change for ${username}`;
     }
   } catch (error) {
@@ -196,20 +138,7 @@ form.addEventListener("submit", async (event) => {
       throw new Error("New password and confirmation do not match");
     }
 
-    const token = await login(username, currentPassword);
-
-    const newSalt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-    const newHash = await deriveKey(newPassword, newSalt, PBKDF2_ITERATIONS);
-
-    await postJson(
-      "/change-password",
-      {
-        new_salt: bytesToHex(newSalt),
-        new_password_hash: bytesToHex(newHash),
-        new_iterations: PBKDF2_ITERATIONS,
-      },
-      token
-    );
+    await SillySite.changepw(window.location.origin, username, currentPassword, newPassword);
 
     messageEl.textContent = "Password changed successfully";
     messageEl.className = "success";

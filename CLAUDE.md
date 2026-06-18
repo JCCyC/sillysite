@@ -69,7 +69,10 @@ prepare commits locally and let the user push manually.
   also defines CRUD endpoints for `/users`, the `/login/challenge` and `/login/response`
   endpoints, a `/change-password` endpoint, a `/whoami` endpoint, a `/logout` endpoint, a
   `/config` endpoint, an `/activeusers` endpoint, a `/login.html` page, a `/whoami.html` page, a
-  `/changepw.html` page, and serves `static/favicon.ico` at `/favicon.ico`. `PUT`
+  `/changepw.html` page, serves `static/favicon.ico` at `/favicon.ico`, and serves `js/sillysite.js`
+  at `/sillysite.js` (so `static/login.html`/`static/whoami.html`/`static/changepw.html` can load
+  it via a plain `<script src="/sillysite.js">` tag instead of duplicating its crypto/login logic
+  inline). `PUT`
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`,
   `session_cleanup_interval_seconds`, `session_cleanup_grace_seconds`) are inserted if missing,
@@ -91,8 +94,8 @@ prepare commits locally and let the user push manually.
   Formula One routes are mounted via `app.include_router(f1.router)` (see `f1.py` below).
 
   Access control (see `auth.py`):
-  - `/login/*`, `/`, `/about`, `/favicon.ico`, `/login.html`, `/whoami.html`, and `/changepw.html`
-    are public.
+  - `/login/*`, `/`, `/about`, `/favicon.ico`, `/sillysite.js`, `/login.html`, `/whoami.html`, and
+    `/changepw.html` are public.
   - `/change-password`, `/whoami`, and `/logout` require any logged-in user (`require_user`);
     `/change-password` changes that user's own password, `/whoami` returns information about
     that user and their session, and `/logout` invalidates the current session (by setting its
@@ -169,13 +172,16 @@ prepare commits locally and let the user push manually.
 - `js/` is a JavaScript client library (`sillysite.js`, a dependency-free UMD module usable from
   Node via `require` or the browser via `<script>`) plus three Node CLI scripts (`login.js`,
   `logout.js`, `changepw.js`). In Node it uses the built-in `http`/`https`/`crypto` modules; in
-  the browser it uses `fetch`/`crypto.subtle` (same APIs as `static/login.html`). See
-  `js/README-JS.md`.
+  the browser it uses `fetch`/`crypto.subtle`. `main.py` also serves it directly to the browser at
+  `/sillysite.js`, and `static/login.html`/`static/whoami.html`/`static/changepw.html` load it via
+  `<script src="/sillysite.js">` and call its functions rather than duplicating login/crypto logic
+  inline. See `js/README-JS.md`.
 
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, and the C and JS client bindings (77 tests as of this writing). Run it with no
+scripts, the C and JS client bindings, and the static browser pages (78 tests as of this
+writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
 against that container, and writes a full report to `tests/report.txt` (live progress also
@@ -195,8 +201,15 @@ clients as subprocesses). The C client reads passwords from `/dev/tty`, not stdi
 non-interactively needs a real controlling terminal — `tests/lib/pty_drive.py` spawns it under a
 pty and feeds scripted prompt/answer pairs at the right time (sending too early loses the input,
 since the C client's `tcsetattr(..., TCSAFLUSH, ...)` when entering no-echo mode discards
-whatever's already queued). Piping a password into `login.py`/`changepw.py` (used internally by
-several test cases as a login helper, and tested directly themselves) needs `detached` (in
+whatever's already queued). `tests/cases/97_static_pages.sh` drives a real headless Chrome through
+`static/login.html` → `static/whoami.html` → `static/changepw.html` → re-login over the plain
+WebDriver HTTP protocol (`tests/lib/browser_e2e.py`, using just `chromedriver` + stdlib
+`urllib` — no selenium/puppeteer needed); it's the only test exercising the *browser* code path of
+`js/sillysite.js` (`fetch`/`crypto.subtle`), since the JS binding tests only exercise the Node code
+path. `chromedriver` is a preflight requirement for `run_tests.sh`; this test isn't part of
+`fast_check.sh`'s subset (real browser startup is too slow for a per-turn check). Piping a
+password into `login.py`/`changepw.py` (used internally by several test cases as a login helper,
+and tested directly themselves) needs `detached` (in
 `tests/lib/proc.sh`, a thin `setsid` wrapper): Python's `getpass.getpass()` prefers `/dev/tty` over
 stdin whenever a controlling terminal exists, so without it, running the suite from an interactive
 shell makes those calls silently ignore the piped password and block on a real, unattended prompt
@@ -259,31 +272,33 @@ underlying scripts it calls are committed and shared either way).
 
 ## /login.html
 
-`GET /login.html` serves `static/login.html`, a small login form that performs the login flow
-above entirely in the browser using the Web Crypto API (`crypto.subtle` for PBKDF2 and
-HMAC-SHA256), then redirects to `GET /whoami.html?apikey=<token>` with the resulting token. If the
-request already carries a valid `X-API-Key`/`apikey` (header or query param, static or session),
-no HTML is served — the endpoint instead redirects (`307`) to `GET /whoami.html?apikey=<that key>`.
+`GET /login.html` serves `static/login.html`, a small login form that loads `/sillysite.js` and
+calls `SillySite.login(window.location.origin, username, password)` to perform the login flow
+above entirely in the browser (via the Web Crypto API, same as the rest of the library), then
+redirects to `GET /whoami.html?apikey=<token>` with the resulting token. If the request already
+carries a valid `X-API-Key`/`apikey` (header or query param, static or session), no HTML is served
+— the endpoint instead redirects (`307`) to `GET /whoami.html?apikey=<that key>`.
 
 ## /whoami.html
 
 `GET /whoami.html` serves `static/whoami.html`, styled consistently with `static/login.html`,
-which fetches `GET /whoami` (using the `apikey` query parameter from its own URL, if present) and
-displays the current user's information nicely, with a "Log out" link (using the same `apikey`)
-shown if there's an associated session. If the request doesn't carry a valid `X-API-Key`/`apikey`
-(header or query param, static or session), it redirects to `/login.html` instead.
+which loads `/sillysite.js` and calls `SillySite.get(window.location.origin, apikey, "/whoami")`
+(using the `apikey` query parameter from its own URL, if present) and displays the current user's
+information nicely, with a "Log out" link (using the same `apikey`) shown if there's an associated
+session. If the request doesn't carry a valid `X-API-Key`/`apikey` (header or query param, static
+or session), it redirects to `/login.html` instead.
 
 ## /changepw.html
 
 `GET /changepw.html` serves `static/changepw.html`, styled consistently with `static/login.html`,
-titled "Password change for `<username>`" (fetching `GET /whoami` to learn the username, using
-the `apikey` query parameter from its own URL, if present). It has fields for the current
-password, new password, and confirmation, and on submit performs the login flow (above) with the
-current password to obtain a fresh session token, derives a new PBKDF2 salt/hash/iterations from
-the new password, and submits those to `/change-password` via that token — entirely in the
-browser, mirroring `changepw.py`. The result is shown as a styled message below the form (green
-on success, red on error). If the request doesn't carry a valid `X-API-Key`/`apikey` (header or
-query param, static or session), it redirects to `/login.html` instead.
+titled "Password change for `<username>`" (fetching `GET /whoami` via `SillySite.get` to learn the
+username, using the `apikey` query parameter from its own URL, if present). It has fields for the
+current password, new password, and confirmation, and on submit calls
+`SillySite.changepw(window.location.origin, username, currentPassword, newPassword)` — same
+library call `changepw.py`/`changepw.js`/`c/changepw` use, entirely in the browser this time. The
+result is shown as a styled message below the form (green on success, red on error). If the
+request doesn't carry a valid `X-API-Key`/`apikey` (header or query param, static or session), it
+redirects to `/login.html` instead.
 
 ## Docker deployment
 

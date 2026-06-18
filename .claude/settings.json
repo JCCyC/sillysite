@@ -30,7 +30,11 @@
       "Bash(git checkout *)",
       "Bash(tests/hook_fast_check.sh)",
       "Bash(bash -n tests/cases/60_f1.sh)",
-      "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.json'\\)\\); json.load\\(open\\('.claude/settings.local.json'\\)\\)\")"
+      "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.json'\\)\\); json.load\\(open\\('.claude/settings.local.json'\\)\\)\")",
+      "Bash(dpkg -l)",
+      "Bash(chromedriver --version)",
+      "Bash(bash -n tests/cases/97_static_pages.sh)",
+      "Bash(bash -n tests/lib/docker.sh)"
     ]
   }
 }

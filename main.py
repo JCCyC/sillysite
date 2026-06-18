@@ -135,6 +135,11 @@ def favicon():
     return FileResponse("static/favicon.ico")
 
 
+@app.get("/sillysite.js", include_in_schema=False)
+def sillysite_js():
+    return FileResponse("js/sillysite.js", media_type="application/javascript")
+
+
 @app.get("/login.html", include_in_schema=False)
 def login_html(
     user: models.User | None = Depends(auth.get_current_user),

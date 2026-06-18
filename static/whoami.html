@@ -112,6 +112,7 @@
     <div id="message"></div>
   </div>
 
+<script src="/sillysite.js"></script>
 <script>
 function formatTimestamp(value) {
   return value ? new Date(value).toLocaleString() : "—";
@@ -119,15 +120,15 @@ function formatTimestamp(value) {
 
 (async () => {
   const apikey = new URLSearchParams(window.location.search).get("apikey");
-  const headers = apikey ? { "X-API-Key": apikey } : {};
 
   try {
-    const response = await fetch("/whoami", { headers });
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.detail || `${response.status} ${response.statusText}`);
+    const resp = await SillySite.get(window.location.origin, apikey, "/whoami");
+    if (resp.status !== 200) {
+      let detail;
+      try { detail = JSON.parse(resp.body).detail; } catch (e) { /* not JSON */ }
+      throw new Error(detail || resp.error || `${resp.status}`);
     }
-    const whoami = await response.json();
+    const whoami = JSON.parse(resp.body);
 
     document.getElementById("username").textContent = whoami.username;
     document.getElementById("full_name").textContent = whoami.full_name;

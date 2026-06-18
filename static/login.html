@@ -92,60 +92,8 @@
     <div id="message"></div>
   </div>
 
+<script src="/sillysite.js"></script>
 <script>
-function hexToBytes(hex) {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-  }
-  return bytes;
-}
-
-function bytesToHex(bytes) {
-  return Array.from(new Uint8Array(bytes))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function postJson(url, body) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || `${response.status} ${response.statusText}`);
-  }
-  return data;
-}
-
-async function login(username, password) {
-  const challengeData = await postJson("/login/challenge", { username });
-
-  const salt = hexToBytes(challengeData.salt);
-  const iterations = challengeData.iterations;
-  const challenge = challengeData.challenge;
-
-  const passwordKey = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]
-  );
-  const derivedBits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
-    passwordKey,
-    256
-  );
-
-  const hmacKey = await crypto.subtle.importKey(
-    "raw", derivedBits, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", hmacKey, hexToBytes(challenge));
-  const response = bytesToHex(signature);
-
-  const loginData = await postJson("/login/response", { username, challenge, response });
-  return loginData.token;
-}
-
 const form = document.getElementById("login-form");
 const messageEl = document.getElementById("message");
 const submitButton = document.getElementById("submit-button");
@@ -160,7 +108,7 @@ form.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
 
   try {
-    const token = await login(username, password);
+    const token = await SillySite.login(window.location.origin, username, password);
     window.location.href = "/whoami.html?apikey=" + encodeURIComponent(token);
   } catch (error) {
     messageEl.textContent = error.message;
