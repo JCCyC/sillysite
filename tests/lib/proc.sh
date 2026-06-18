@@ -14,3 +14,14 @@ pty_drive() {
 last_nonblank_line() {
     printf '%s\n' "$1" | tr -d '\r' | grep -v '^[[:space:]]*$' | tail -n1
 }
+
+# detached <command> [args...]
+# Runs a command in a new session, detached from any controlling terminal.
+# Needed before piping a password into login.py/changepw.py: Python's
+# getpass.getpass() prefers /dev/tty over stdin whenever a controlling
+# terminal exists, so when this test suite is itself run from an
+# interactive shell, piped stdin would otherwise be silently ignored in
+# favor of a real (and unattended) terminal prompt.
+detached() {
+    setsid "$@"
+}

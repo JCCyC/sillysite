@@ -5,7 +5,7 @@ test_script_login_success() {
     user="$(unique_name scriptloginok)"
     pw="pw_${RANDOM}"
     create_user "$user" "$pw" || { echo "setup failed"; return 1; }
-    token="$(printf '%s\n' "$pw" | "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" 2>/tmp/sillysite_test_err)"
+    token="$(printf '%s\n' "$pw" | detached "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" 2>/tmp/sillysite_test_err)"
     local rc=$?
     [ "$rc" -eq 0 ] || { cat /tmp/sillysite_test_err; return 1; }
     [ "${#token}" -eq 64 ] || { echo "unexpected token: $token"; return 1; }
@@ -18,7 +18,7 @@ test_script_login_wrong_password() {
     user="$(unique_name scriptloginwrong)"
     pw="pw_${RANDOM}"
     create_user "$user" "$pw" || { echo "setup failed"; return 1; }
-    if printf '%s\n' "not-$pw" | "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" >/dev/null 2>/tmp/sillysite_test_err; then
+    if printf '%s\n' "not-$pw" | detached "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" >/dev/null 2>/tmp/sillysite_test_err; then
         echo "login.py unexpectedly succeeded"
         return 1
     fi
@@ -35,7 +35,7 @@ test_script_changepw_success() {
     create_user "$user" "$pw" || { echo "setup failed"; return 1; }
 
     local out
-    out="$(printf '%s\n%s\n%s\n' "$pw" "$newpw" "$newpw" | "$PROJECT_ROOT/changepw.py" "$BASE_URL" "$user" 2>/tmp/sillysite_test_err)"
+    out="$(printf '%s\n%s\n%s\n' "$pw" "$newpw" "$newpw" | detached "$PROJECT_ROOT/changepw.py" "$BASE_URL" "$user" 2>/tmp/sillysite_test_err)"
     local rc=$?
     [ "$rc" -eq 0 ] || { cat /tmp/sillysite_test_err; return 1; }
     assert_contains "$out" "Password changed successfully" || return 1
@@ -50,7 +50,7 @@ test_script_changepw_mismatch() {
     user="$(unique_name scriptchangepwmismatch)"
     pw="pw_${RANDOM}"
     create_user "$user" "$pw" || { echo "setup failed"; return 1; }
-    if printf '%s\nnewpw1\nnewpw2\n' "$pw" | "$PROJECT_ROOT/changepw.py" "$BASE_URL" "$user" >/dev/null 2>/tmp/sillysite_test_err; then
+    if printf '%s\nnewpw1\nnewpw2\n' "$pw" | detached "$PROJECT_ROOT/changepw.py" "$BASE_URL" "$user" >/dev/null 2>/tmp/sillysite_test_err; then
         echo "changepw.py unexpectedly succeeded"
         return 1
     fi

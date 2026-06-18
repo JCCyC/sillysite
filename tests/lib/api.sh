@@ -39,7 +39,7 @@ create_user() {
 # Returns 1 (with $TOKEN unset) on failure.
 login_as() {
     local username="$1" password="$2"
-    TOKEN="$(printf '%s\n' "$password" | "$PROJECT_ROOT/login.py" "$BASE_URL" "$username" 2>/tmp/sillysite_test_err)"
+    TOKEN="$(printf '%s\n' "$password" | detached "$PROJECT_ROOT/login.py" "$BASE_URL" "$username" 2>/tmp/sillysite_test_err)"
     local rc=$?
     if [ "$rc" -ne 0 ] || [ -z "$TOKEN" ]; then
         cat /tmp/sillysite_test_err >&2

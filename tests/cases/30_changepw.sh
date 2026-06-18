@@ -30,7 +30,7 @@ test_change_password_old_password_rejected() {
     api POST /change-password "$TOKEN" "{\"new_salt\":\"$salt\",\"new_password_hash\":\"$hash\",\"new_iterations\":$iterations}"
     [ "$STATUS" = "204" ] || { echo "change-password setup failed: $STATUS"; return 1; }
 
-    if printf '%s\n' "$oldpw" | "$PROJECT_ROOT/login.py" "$BASE_URL" "$TEST_USERNAME" >/dev/null 2>/tmp/sillysite_test_err; then
+    if printf '%s\n' "$oldpw" | detached "$PROJECT_ROOT/login.py" "$BASE_URL" "$TEST_USERNAME" >/dev/null 2>/tmp/sillysite_test_err; then
         echo "login with old password unexpectedly succeeded"
         return 1
     fi

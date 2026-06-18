@@ -37,7 +37,7 @@ test_login_wrong_password() {
     user="$(unique_name loginwrong)"
     pw="pw_${RANDOM}"
     create_user "$user" "$pw" || { echo "create_user failed"; return 1; }
-    if printf '%s\n' "wrong-$pw" | "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" >/tmp/sillysite_test_out 2>/tmp/sillysite_test_err; then
+    if printf '%s\n' "wrong-$pw" | detached "$PROJECT_ROOT/login.py" "$BASE_URL" "$user" >/tmp/sillysite_test_out 2>/tmp/sillysite_test_err; then
         echo "login.py unexpectedly succeeded"
         return 1
     fi
