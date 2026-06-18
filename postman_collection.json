@@ -77,6 +77,13 @@
           }
         },
         {
+          "name": "Team Winners",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/teams/winners"
+          }
+        },
+        {
           "name": "Get Team",
           "request": {
             "method": "GET",
@@ -148,6 +155,13 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/drivers"
+          }
+        },
+        {
+          "name": "Driver Winners",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/drivers/winners"
           }
         },
         {

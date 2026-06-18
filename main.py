@@ -7,6 +7,7 @@ from urllib.parse import quote
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import auth
@@ -34,9 +35,17 @@ def _ensure_default_config():
     db = SessionLocal()
     try:
         for key, default_value in DEFAULT_CONFIG.items():
-            if db.get(models.AppConfig, key) is None:
-                db.add(models.AppConfig(key=key, value=str(default_value)))
-        db.commit()
+            if db.get(models.AppConfig, key) is not None:
+                continue
+            db.add(models.AppConfig(key=key, value=str(default_value)))
+            try:
+                db.commit()
+            except IntegrityError:
+                # Another worker process inserted this key first (gunicorn
+                # boots multiple workers concurrently, each running this
+                # function independently) -- the desired row exists either
+                # way, so this is benign.
+                db.rollback()
     finally:
         db.close()
 
@@ -74,9 +83,15 @@ def _ensure_admin_user():
                 is_admin=True,
             )
             db.add(admin)
+            try:
+                db.commit()
+            except IntegrityError:
+                # Another worker process created the admin user first, for
+                # the same reason as in _ensure_default_config above.
+                db.rollback()
         else:
             admin.full_name = auth.ADMIN_FULL_NAME
-        db.commit()
+            db.commit()
     finally:
         db.close()
 

@@ -101,6 +101,12 @@ class SeasonGrandPrix(BaseModel):
     winning_team: str | None = None
 
 
+class WinnerCount(BaseModel):
+    id: int
+    name: str
+    wins: int
+
+
 class UserCreate(BaseModel):
     username: str
     full_name: str

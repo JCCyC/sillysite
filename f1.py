@@ -1,6 +1,7 @@
 import random
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 import models
@@ -85,6 +86,26 @@ def list_teams(db: Session = Depends(get_db)):
 
 
 @router.get(
+    "/teams/winners",
+    response_model=list[schemas.WinnerCount],
+    dependencies=[Depends(require_user)],
+)
+def get_team_winners(db: Session = Depends(get_db)):
+    rows = (
+        db.query(
+            models.Team.id,
+            models.Team.name,
+            func.count(models.GrandPrix.winning_team_id).label("wins"),
+        )
+        .join(models.GrandPrix, models.GrandPrix.winning_team_id == models.Team.id)
+        .group_by(models.Team.id, models.Team.name)
+        .order_by(func.count(models.GrandPrix.winning_team_id).desc(), models.Team.name)
+        .all()
+    )
+    return [schemas.WinnerCount(id=row.id, name=row.name, wins=row.wins) for row in rows]
+
+
+@router.get(
     "/teams/{team_id}",
     response_model=schemas.Team,
     dependencies=[Depends(require_user)],
@@ -149,6 +170,26 @@ def delete_team(team_id: int, db: Session = Depends(get_db)):
 )
 def list_drivers(db: Session = Depends(get_db)):
     return db.query(models.Driver).all()
+
+
+@router.get(
+    "/drivers/winners",
+    response_model=list[schemas.WinnerCount],
+    dependencies=[Depends(require_user)],
+)
+def get_driver_winners(db: Session = Depends(get_db)):
+    rows = (
+        db.query(
+            models.Driver.id,
+            models.Driver.name,
+            func.count(models.GrandPrix.winning_driver_id).label("wins"),
+        )
+        .join(models.GrandPrix, models.GrandPrix.winning_driver_id == models.Driver.id)
+        .group_by(models.Driver.id, models.Driver.name)
+        .order_by(func.count(models.GrandPrix.winning_driver_id).desc(), models.Driver.name)
+        .all()
+    )
+    return [schemas.WinnerCount(id=row.id, name=row.name, wins=row.wins) for row in rows]
 
 
 @router.get(

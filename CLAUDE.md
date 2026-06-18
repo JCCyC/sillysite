@@ -63,7 +63,13 @@ prepare commits locally and let the user push manually.
   endpoints accept partial bodies — only the fields provided are updated. On startup, default
   `app_config` rows (`session_ttl_seconds`, `login_timeout_seconds`, `change_pw_timeout_seconds`,
   `session_cleanup_interval_seconds`, `session_cleanup_grace_seconds`) are inserted if missing,
-  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing. An
+  and a non-removable `admin` user (id `0`, `is_admin=True`) is created if missing. This logic
+  runs at module level (once per worker process, not behind a startup hook — it has to run before
+  the rest of import-time setup), so under `gunicorn` with `WEB_CONCURRENCY>1` multiple workers
+  can race to insert the same row on a cold start; the insert-then-commit for each is wrapped in
+  its own `try`/`except IntegrityError` (rollback and move on) rather than a single batch commit,
+  since whichever worker loses the race finding the row already there is exactly the desired
+  outcome, not an error. An
   `@app.on_event("startup")` hook starts a background daemon thread that wakes up every
   `session_cleanup_interval_seconds` (`app_config`, default 15 minutes) and, in a single DB
   session, reads both config values and deletes any rows in `sessions` whose `expires_at` is more
@@ -93,7 +99,15 @@ prepare commits locally and let the user push manually.
   the composite season/sequence number), and `GET /season/{year}` — returns all Grands Prix for
   that season in order, with the winning driver/team's *names* (not ids), 404 if the season has
   no races. It uses `joinedload` on `winning_driver`/`winning_team` to fetch each race's data in
-  one query instead of issuing a separate `SELECT` per relationship per race (N+1).
+  one query instead of issuing a separate `SELECT` per relationship per race (N+1). `GET
+  /drivers/winners` and `GET /teams/winners` return drivers/teams that have won at least one
+  Grand Prix (across all seasons), each as `{"id", "name", "wins"}`, ordered by `wins` descending
+  (ties broken alphabetically by name); winless drivers/teams are omitted, which falls out
+  naturally from an inner join against `grands_prix` rather than needing an explicit filter. Both
+  are registered before their `/{id}` counterparts (`/drivers/{driver_id}`, `/teams/{team_id}`),
+  since FastAPI matches routes in registration order and a literal path registered after a
+  parameterized one would never be reached — `/drivers/winners` would instead 422 trying to
+  parse `"winners"` as `driver_id: int`.
 - `auth.py` resolves the caller's `User` from the `X-API-Key` header or an `apikey` query
   parameter (`resolve_api_key`; if both are present, the request is treated as unauthenticated,
   even if they match): either the static key matching `config.API_KEY` (which maps to the `admin`
@@ -149,7 +163,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, and the C and JS client bindings (72 tests as of this writing). Run it with no
+scripts, and the C and JS client bindings (76 tests as of this writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
 against that container, and writes a full report to `tests/report.txt` (live progress also
