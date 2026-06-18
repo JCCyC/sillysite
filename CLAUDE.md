@@ -6,18 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a minimal FastAPI app used for testing website deployment. Core routes (auth, users,
 whoami/logout, config) live in `main.py`; Formula One business logic (CRUD endpoints, `/about`,
-`/season/{year}`) lives in `f1.py`, mounted as an `APIRouter`.
+`/season/{year}`) lives in `business.py`, mounted as an `APIRouter`.
 
 ## Adapting this template for a different business
 
 The generic SaaS scaffolding (auth, sessions, users, admin, config, client bindings, test
 framework, Docker deployment) has no Formula One knowledge at all — F1 exists only to give the
-scaffolding something concrete to demonstrate. To adapt this for a different business, replace
-the F1-specific pieces below and leave everything else alone.
+scaffolding something concrete to demonstrate. `business.py` is deliberately named generically:
+to adapt this for a different business, replace its *contents* (and the matching pieces below),
+not the file itself.
 
 **Replace (F1-specific):**
-- `f1.py` — delete the F1 routes and add your own as a new `APIRouter`; mount it in `main.py` the
-  same way (`app.include_router(yourmodule.router)`). Note `/about` currently lives here too —
+- `business.py` — replace the F1 routes with your own (keep it mounted the same way in
+  `main.py`: `app.include_router(business.router)`). Note `/about` currently lives here too —
   decide whether your replacement keeps a similar endpoint or drops it (see the test gotcha
   below if you drop it).
 - `models.py` — keep `User`, `UserSession`, `AppConfig`; replace `Team`/`Driver`/`DriverNumber`/
@@ -27,7 +28,7 @@ the F1-specific pieces below and leave everything else alone.
   `SeasonGrandPrix`, `WinnerCount`) with your own.
 - `seed.py` — replace with seed data for your own business, or remove (and drop `SEED_DB` support
   in `docker/entrypoint.sh`) if you don't need seeding.
-- `tests/cases/60_f1.sh` — replace with tests for your own business endpoints.
+- `tests/cases/60_business.sh` — replace with tests for your own business endpoints.
 - `c/season.c` — the only F1-specific C program (`login`/`changepw` are generic); replace or
   remove, along with the matching `test_c_season_*` cases inside `tests/cases/95_bindings_c.sh`
   (the `test_c_build`/`test_c_login_*`/`test_c_changepw_*` cases in that same file are generic
@@ -35,12 +36,12 @@ the F1-specific pieces below and leave everything else alone.
 - `postman_collection.json`'s Teams/Drivers/Driver Numbers/Grands Prix/Season folders — replace
   with requests for your own endpoints.
 - `static/favicon.ico` — cosmetic; swap for your own branding.
-- The F1-specific parts of this file and `README.md` — the `f1.py` architecture description, the
-  Data Conventions section, and the season/winners endpoint docs.
+- The F1-specific parts of this file and `README.md` — the `business.py` architecture
+  description, the Data Conventions section, and the season/winners endpoint docs.
 
 **Test gotcha:** `tests/cases/10_public.sh`'s `test_about_public` expects `GET /about` to return
-200 — but `/about` is defined in `f1.py`, which you're replacing. If your replacement doesn't
-keep an `/about`-equivalent, remove that one test rather than leaving it to fail.
+200 — but `/about` is defined in `business.py`. If your replacement doesn't keep an
+`/about`-equivalent, remove that one test rather than leaving it to fail.
 
 **Leave alone (generic, no F1 knowledge):**
 - `main.py`, `auth.py`, `config.py`, `database.py` — the whole auth/session/user/admin/config
@@ -86,9 +87,9 @@ endpoint's behavior or status code, or adds/changes a utility script or client b
 update the corresponding `tests/cases/*.sh` test(s) in the same change — not as a follow-up, and
 not only when explicitly asked. A passing suite that doesn't actually cover the new behavior is
 worse than an honestly failing one. If the change touches one of the files `tests/hook_fast_check.sh`
-watches (`main.py`, `f1.py`, `auth.py`, `config.py`, `database.py`, `models.py`, `schemas.py`),
-new pure-API tests belong in `tests/cases/10`–`70` so they're covered by the fast check too, not
-only the full suite.
+watches (`main.py`, `business.py`, `auth.py`, `config.py`, `database.py`, `models.py`,
+`schemas.py`), new pure-API tests belong in `tests/cases/10`–`70` so they're covered by the fast
+check too, not only the full suite.
 
 When writing or reviewing client code (Python/C/JS or otherwise) that checks an HTTP response
 status, check against the endpoint's actual documented status rather than assuming `200`: `POST`
@@ -100,7 +101,7 @@ Route registration order should never matter — when adding a path parameter, u
 Starlette converter the value's type actually supports (`{id:int}`, `{id:uuid}`, etc.) rather than
 a bare `{name}`, so a literal sibling route (e.g. `/drivers/winners` next to
 `/drivers/{driver_id}`) can never be shadowed regardless of which is registered first — see
-`f1.py`. This isn't fully achievable for string-typed parameters with no narrower natural type
+`business.py`. This isn't fully achievable for string-typed parameters with no narrower natural type
 (`/users/{username}` in `main.py`, since usernames have no fixed format to constrain): there's
 currently no literal route under `/users/` for it to collide with, but if one is ever added,
 register it before `/users/{username}` and double-check for this exact class of shadowing, since
@@ -140,7 +141,8 @@ prepare commits locally and let the user push manually.
   --reload` imports `main.py` twice (once in the reloader process, once in the worker
   subprocess) — module-level side effects would start the thread twice, producing duplicate
   cleanup runs every cycle; the startup hook only fires once, inside the actual ASGI worker.
-  Formula One routes are mounted via `app.include_router(f1.router)` (see `f1.py` below).
+  Formula One routes are mounted via `app.include_router(business.router)` (see `business.py`
+  below).
 
   Access control (see `auth.py`):
   - `/login/*`, `/`, `/about`, `/favicon.ico`, `/sillysite.js`, `/login.html`, `/whoami.html`, and
@@ -154,7 +156,8 @@ prepare commits locally and let the user push manually.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
   - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and
     `GET /activeusers`) requires an admin (`require_admin`).
-- `f1.py` holds all Formula One business logic, as a FastAPI `APIRouter` mounted by `main.py`:
+- `business.py` holds all Formula One business logic, as a FastAPI `APIRouter` mounted by
+  `main.py`:
   `/about` (returns `{"msg": "<random message>"}` chosen from a small list of candidate
   messages), CRUD endpoints for `/teams`, `/drivers` (keyed by `id`), `/driver-numbers` (keyed by
   the composite `driver_id`/`season`), and `/grands-prix/{season}/{sequence_number}` (keyed by
@@ -279,8 +282,8 @@ considering a feature done. The fastdb container's data isn't reset between call
 test rows accumulate over time; `docker rm -f -v sillysite-fastdb` to start clean.
 
 `tests/hook_fast_check.sh` wraps it for automatic use: it hashes a fixed list of watched app files
-(`main.py`, `f1.py`, `auth.py`, `config.py`, `database.py`, `models.py`, `schemas.py`) and only
-actually runs `fast_check.sh` if that hash changed since the last check (tracked in
+(`main.py`, `business.py`, `auth.py`, `config.py`, `database.py`, `models.py`, `schemas.py`) and
+only actually runs `fast_check.sh` if that hash changed since the last check (tracked in
 `tests/.fast_check_hash`), so it's a no-op on turns that didn't touch app code. It stays silent on
 a pass, and on a failure prints a `systemMessage` JSON line (pass/fail counts, pointers to
 `tests/fast_report.txt` and the full suite) — it never blocks the turn from ending. This is wired

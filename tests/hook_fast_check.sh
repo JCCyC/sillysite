@@ -13,7 +13,7 @@ TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
 HASH_FILE="$TESTS_DIR/.fast_check_hash"
 
-WATCHED_FILES=(main.py f1.py auth.py config.py database.py models.py schemas.py)
+WATCHED_FILES=(main.py business.py auth.py config.py database.py models.py schemas.py)
 
 cd "$PROJECT_ROOT" || exit 0
 

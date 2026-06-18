@@ -98,7 +98,7 @@ for case_file in \
     "$TESTS_DIR/cases/30_changepw.sh" \
     "$TESTS_DIR/cases/40_whoami_logout.sh" \
     "$TESTS_DIR/cases/50_users.sh" \
-    "$TESTS_DIR/cases/60_f1.sh" \
+    "$TESTS_DIR/cases/60_business.sh" \
     "$TESTS_DIR/cases/70_config_activeusers.sh"
 do
     # shellcheck source=/dev/null

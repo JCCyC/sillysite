@@ -29,12 +29,15 @@
       "Bash(bash -n tests/fast_check.sh tests/lib/docker.sh)",
       "Bash(git checkout *)",
       "Bash(tests/hook_fast_check.sh)",
-      "Bash(bash -n tests/cases/60_f1.sh)",
+      "Bash(bash -n tests/cases/60_business.sh)",
       "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.json'\\)\\); json.load\\(open\\('.claude/settings.local.json'\\)\\)\")",
       "Bash(dpkg -l)",
       "Bash(chromedriver --version)",
       "Bash(bash -n tests/cases/97_static_pages.sh)",
-      "Bash(bash -n tests/lib/docker.sh)"
+      "Bash(bash -n tests/lib/docker.sh)",
+      "Bash(git mv *)",
+      "Bash(grep -n \"f1\\\\.py\\\\|f1\\\\.router\\\\|\\\\`f1\\\\`\" /home/jcastro/src/claudetest/sillysite/CLAUDE.md)",
+      "Bash(grep -n \"f1\\\\.py\\\\|f1\\\\.router\\\\|60_f1\\\\|\\\\`f1\\\\`\" /home/jcastro/src/claudetest/sillysite/CLAUDE.md)"
     ]
   }
 }
