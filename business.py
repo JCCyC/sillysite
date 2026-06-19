@@ -32,6 +32,7 @@ ABOUT_MESSAGES = [
     "Undercut secured.",
     "Purple sector one.",
     "Checkered flag incoming.",
+    "Leave me alone, I know what I'm doing.",
 ]
 
 
