@@ -24,6 +24,30 @@ preflight_checks() {
     fi
 }
 
+# own_container_network
+# If this script is itself running inside a Docker container (the
+# .devcontainer "app" service, detected via /.dockerenv) that talks to the
+# *host's* dockerd over a bind-mounted socket (Docker-outside-of-Docker),
+# prints the name of a docker network this container is attached to and
+# returns 0. A container we start published only to the host's loopback
+# (-p 127.0.0.1:PORT:...) is unreachable from here, since we're in our own
+# network namespace, separate from the host's -- so callers use this to
+# decide whether to instead attach sidecar containers to this same network
+# and address them by container name. Prints nothing and returns 1 when not
+# in a container (plain host run), where 127.0.0.1 + published port already
+# works and needs no special handling.
+own_container_network() {
+    [ -f /.dockerenv ] || return 1
+    docker inspect "$(hostname)" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    print(next(iter(data[0]["NetworkSettings"]["Networks"])))
+except Exception:
+    sys.exit(1)
+'
+}
+
 # find_free_port <start>
 # Picks the first free TCP port at or after <start> (checked against both
 # IPv4 and IPv6 loopback listeners).
@@ -62,9 +86,14 @@ build_image() {
 }
 
 start_container() {
-    echo "Starting container '$CONTAINER_NAME' on port $TEST_PORT..."
+    echo "Starting container '$CONTAINER_NAME' (reachable at $BASE_URL)..."
+    local network_args=()
+    if [ -n "${CONTAINER_NETWORK:-}" ]; then
+        network_args=(--network "$CONTAINER_NETWORK")
+    fi
     docker run -d \
         --name "$CONTAINER_NAME" \
+        "${network_args[@]}" \
         -p "127.0.0.1:${TEST_PORT}:8000" \
         -e "API_KEY=${ADMIN_KEY}" \
         -e "SEED_DB=true" \
@@ -119,7 +148,7 @@ print_postmortem_info() {
     cat <<EOF
 
 Docker objects were left running for post-mortem inspection:
-  Container: $CONTAINER_NAME  (API on http://127.0.0.1:${TEST_PORT}/)
+  Container: $CONTAINER_NAME  (API at ${BASE_URL}/)
   Image:     $IMAGE_NAME
 
   docker logs $CONTAINER_NAME

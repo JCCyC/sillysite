@@ -55,8 +55,8 @@ API_PORT="$(find_free_port 19900)"
 ADMIN_KEY="fastcheckkey0000000000000000000000000000"
 BASE_URL="http://127.0.0.1:${API_PORT}"
 
-export DB_HOST=127.0.0.1
-export DB_PORT="$FASTDB_PORT"
+export DB_HOST="$FASTDB_HOST"
+export DB_PORT="$FASTDB_DB_PORT"
 export DB_SCHEMA=public
 export DB_NAME="$DB_NAME_TEST"
 export DB_USER="$DB_NAME_TEST"

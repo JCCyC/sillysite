@@ -13,11 +13,24 @@ FASTDB_CONTAINER="sillysite-fastdb"
 FASTDB_PORT_FILE="$TESTS_DIR/.fastdb_port"
 
 # ensure_fastdb_running
-# Sets $FASTDB_PORT. Builds the image and starts (seeded) the container if
-# it isn't already running; otherwise reuses it as-is.
+# Sets $FASTDB_PORT (host-published port, kept for a plain host run or for
+# poking at the container from a host shell) and $FASTDB_HOST/$FASTDB_DB_PORT
+# (what to actually set DB_HOST/DB_PORT to -- see own_container_network in
+# lib/docker.sh for why these differ when fast_check.sh itself runs inside
+# the .devcontainer "app" service). Builds the image and starts (seeded) the
+# container if it isn't already running; otherwise reuses it as-is.
 ensure_fastdb_running() {
+    CONTAINER_NETWORK="$(own_container_network || true)"
+    if [ -n "$CONTAINER_NETWORK" ]; then
+        FASTDB_HOST="$FASTDB_CONTAINER"
+        FASTDB_DB_PORT=5432
+    else
+        FASTDB_HOST=127.0.0.1
+    fi
+
     if docker ps --format '{{.Names}}' | grep -qx "$FASTDB_CONTAINER" && [ -f "$FASTDB_PORT_FILE" ]; then
         FASTDB_PORT="$(cat "$FASTDB_PORT_FILE")"
+        [ -n "$CONTAINER_NETWORK" ] || FASTDB_DB_PORT="$FASTDB_PORT"
         return 0
     fi
 
@@ -29,8 +42,15 @@ ensure_fastdb_running() {
 
     FASTDB_PORT="$(find_free_port 19800)"
     echo "$FASTDB_PORT" > "$FASTDB_PORT_FILE"
+    [ -n "$CONTAINER_NETWORK" ] || FASTDB_DB_PORT="$FASTDB_PORT"
+
+    local network_args=()
+    if [ -n "$CONTAINER_NETWORK" ]; then
+        network_args=(--network "$CONTAINER_NETWORK")
+    fi
 
     docker run -d --name "$FASTDB_CONTAINER" \
+        "${network_args[@]}" \
         -p "127.0.0.1:${FASTDB_PORT}:5432" \
         -e "API_KEY=unused" \
         -e "SEED_DB=true" \
@@ -44,7 +64,7 @@ ensure_fastdb_running() {
     local consecutive_ok=0
     local deadline=$((SECONDS + 90))
     while [ "$SECONDS" -lt "$deadline" ]; do
-        if pg_isready -h 127.0.0.1 -p "$FASTDB_PORT" > /dev/null 2>&1; then
+        if pg_isready -h "$FASTDB_HOST" -p "$FASTDB_DB_PORT" > /dev/null 2>&1; then
             consecutive_ok=$((consecutive_ok + 1))
             if [ "$consecutive_ok" -ge 2 ]; then
                 return 0

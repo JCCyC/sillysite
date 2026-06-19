@@ -265,6 +265,35 @@ stdin whenever a controlling terminal exists, so without it, running the suite f
 shell makes those calls silently ignore the piped password and block on a real, unattended prompt
 instead.
 
+### Running tests from inside the Dev Container
+
+Both `tests/run_tests.sh` and `tests/fast_check.sh` start sidecar Docker containers
+(`sillysite-test`, `sillysite-fastdb`) and then talk to them as `127.0.0.1:<published-port>`.
+That works fine on a bare host, but not when the test script is itself running inside
+`.devcontainer`'s `app` service: `app`'s Docker access is Docker-outside-of-Docker (the host's
+rootless dockerd, reached over a bind-mounted socket — see "Dev container" below), so `docker run
+-p 127.0.0.1:PORT:...` publishes that port on the *host's* loopback, which is a different network
+namespace from `app`'s own — unreachable as `127.0.0.1` from inside `app` even though the sidecar
+container is perfectly healthy. `own_container_network` (`tests/lib/docker.sh`) detects this (via
+`/.dockerenv` plus `docker inspect "$(hostname)"`, which works because Docker sets a container's
+hostname to its own short ID by default) and returns the docker network `app` itself is attached
+to, or nothing if not running in a container. When it returns a network, `start_container`
+(`tests/lib/docker.sh`) and `ensure_fastdb_running` (`tests/lib/fastdb.sh`) attach the sidecar
+container to that same network instead, and callers address it by container name (Docker's
+embedded DNS resolves container names within a user-defined bridge network) rather than via the
+host-published port: `run_tests.sh` sets `BASE_URL=http://sillysite-test:8000`, and
+`fast_check.sh` sets `DB_HOST`/`DB_PORT` from `fastdb.sh`'s `$FASTDB_HOST`/`$FASTDB_DB_PORT`
+(`sillysite-fastdb`/`5432`) instead of `127.0.0.1`/`$FASTDB_PORT`. The host-published port mapping
+and `$FASTDB_PORT`/`$TEST_PORT` host port allocation are still kept either way, so a plain host
+shell can still reach the same container directly — only the *address the test runner itself
+connects to* changes. One more wrinkle specific to `tests/cases/97_static_pages.sh`: a container
+name like `http://sillysite-test:8000` isn't a "secure context" to a real browser (only `https:`,
+or the special-cased `http://localhost`/`http://127.0.0.1`, qualify), so `window.crypto.subtle`
+(used by `/sillysite.js`) would silently be missing and the login flow would fail with no
+exception — `tests/lib/browser_e2e.py` works around this by launching Chrome with
+`--unsafely-treat-insecure-origin-as-secure=<base_url>`, which tells Chrome to treat that one
+origin as secure for the test session regardless.
+
 ### Fast check (`tests/fast_check.sh`)
 
 A lighter, much faster alternative to `tests/run_tests.sh` for everyday iteration: it reuses a

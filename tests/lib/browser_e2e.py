@@ -51,14 +51,24 @@ class WebDriver:
             time.sleep(0.2)
         return False
 
-    def start_session(self):
+    def start_session(self, insecure_origin=None):
+        # window.crypto.subtle (used by /sillysite.js) only exists in a
+        # "secure context" -- https, or the special-cased http://localhost
+        # and http://127.0.0.1. When base_url is neither (e.g. a docker
+        # container name, reached over a plain-bridge-network origin from
+        # inside the .devcontainer "app" service -- see
+        # own_container_network in lib/docker.sh), Chrome silently omits
+        # crypto.subtle and the login flow fails with no visible error.
+        # This flag tells Chrome to treat that one origin as secure anyway,
+        # for this test session only.
+        args = ["--headless=new", "--no-sandbox", "--disable-gpu"]
+        if insecure_origin:
+            args.append(f"--unsafely-treat-insecure-origin-as-secure={insecure_origin}")
         caps = {
             "capabilities": {
                 "alwaysMatch": {
                     "browserName": "chrome",
-                    "goog:chromeOptions": {
-                        "args": ["--headless=new", "--no-sandbox", "--disable-gpu"]
-                    },
+                    "goog:chromeOptions": {"args": args},
                 }
             }
         }
@@ -110,7 +120,7 @@ def main():
             print("chromedriver did not become ready", file=sys.stderr)
             return 1
 
-        driver.start_session()
+        driver.start_session(insecure_origin=base_url)
 
         driver.navigate(f"{base_url}/login.html")
         driver.send_keys("#username", username)

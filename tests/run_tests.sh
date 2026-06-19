@@ -32,9 +32,19 @@ source "$TESTS_DIR/lib/proc.sh"
 preflight_checks
 check_no_leftover_container
 
+CONTAINER_NETWORK="$(own_container_network || true)"
 TEST_PORT="$(find_free_port 19700)"
 ADMIN_KEY="testsuitekey0000000000000000000000000000"
-BASE_URL="http://127.0.0.1:${TEST_PORT}"
+if [ -n "$CONTAINER_NETWORK" ]; then
+    # We're running inside the .devcontainer "app" service ourselves --
+    # 127.0.0.1:$TEST_PORT is only published on the *host's* loopback (see
+    # own_container_network in lib/docker.sh), unreachable from here.
+    # Address the container directly by name on our shared docker network
+    # instead (start_container attaches it there for exactly this reason).
+    BASE_URL="http://${CONTAINER_NAME}:8000"
+else
+    BASE_URL="http://127.0.0.1:${TEST_PORT}"
+fi
 
 build_image
 start_container
