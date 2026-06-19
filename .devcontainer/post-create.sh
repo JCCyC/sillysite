@@ -4,6 +4,9 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+echo "[post-create] Installing the Claude Code CLI..."
+npm install -g @anthropic-ai/claude-code --silent
+
 echo "[post-create] Setting up Python venv..."
 python3 -m venv .venv
 .venv/bin/pip install --upgrade pip --quiet
@@ -35,4 +38,6 @@ Dev container ready.
   tests/run_tests.sh                    # full suite (talks to the host's
                                          # Docker daemon -- see the socket
                                          # mount note in docker-compose.yml)
+  claude                                # Claude Code (logged in already --
+                                         # ~/.claude is shared from the host)
 EOF

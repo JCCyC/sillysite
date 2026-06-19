@@ -23,6 +23,11 @@ services:
       # '{{.Endpoints.docker.Host}}'` on a different machine and adjust the
       # source path if it differs.
       - /run/user/1000/docker.sock:/var/run/docker.sock
+      # Shares Claude Code's login/settings/memory with the host, rather
+      # than requiring a separate login inside the container. Target is
+      # /root/.claude since remoteUser is root (see devcontainer.json).
+      # Hardcoded to this user's home directory like the paths above.
+      - /home/jcastro/.claude:/root/.claude:cached
     command: sleep infinity
     environment:
       DB_HOST: db

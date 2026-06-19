@@ -140,12 +140,13 @@ or `./run.sh`, which `cd`s to the repo root first.
 
 If you have the VS Code Dev Containers extension installed, "Reopen in Container" picks up
 `.devcontainer/devcontainer.json` and builds a ready-to-use environment (Python venv, Postgres,
-the C/JS toolchains, and a headless-Chrome browser for the static-pages test) via
+the C/JS toolchains, a headless-Chrome browser for the static-pages test, and Claude Code) via
 `docker-compose`, then runs `.devcontainer/post-create.sh` once to set up the venv, create
-tables, and seed sample data. See the comments in `.devcontainer/docker-compose.yml` for two
+tables, and seed sample data. See the comments in `.devcontainer/docker-compose.yml` for three
 machine-specific things you'll need to adjust if you're not on the original author's exact setup:
-the workspace bind mount path, and the host Docker socket path (this one matters most if your
-host runs rootless Docker, where the socket isn't at the conventional `/var/run/docker.sock`).
+the workspace bind mount path, the host Docker socket path (this one matters most if your host
+runs rootless Docker, where the socket isn't at the conventional `/var/run/docker.sock`), and the
+host's `~/.claude` path (shared into the container so Claude Code doesn't need a separate login).
 
 ## Seeding data
 

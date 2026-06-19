@@ -376,8 +376,13 @@ CLI, and a headless Chromium browser for the static-pages test on top of the sta
 configured via `environment:` so no `.env` file is needed inside the container — `config.py`'s
 `load_dotenv()` doesn't override already-set environment variables). One official Feature
 (`ghcr.io/devcontainers/features/node:1`) adds Node.js on top of the built image.
-`.devcontainer/post-create.sh` runs once on container creation: sets up the Python venv, waits for
-Postgres, creates tables (`import main`), seeds sample data, and builds the C client.
+`.devcontainer/post-create.sh` runs once on container creation: installs the Claude Code CLI
+(`npm install -g @anthropic-ai/claude-code`; the `anthropic.claude-code` VS Code extension is
+also in `devcontainer.json`'s `customizations.vscode.extensions`), sets up the Python venv, waits
+for Postgres, creates tables (`import main`), seeds sample data, and builds the C client.
+`docker-compose.yml` also bind-mounts the host's `~/.claude` to `/root/.claude` so Claude Code is
+already logged in inside the container, sharing settings/memory with the host rather than
+needing a separate login.
 
 The `app` service's Docker access (so `tests/run_tests.sh`, which itself drives Docker, can run
 *inside* the dev container, talking to the same daemon as the host rather than a nested one) is
