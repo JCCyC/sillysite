@@ -32,7 +32,7 @@ Dev container ready.
 
   .venv/bin/uvicorn main:app --reload   # run the API (forwarded on :8000)
   tests/fast_check.sh                   # quick pure-API test subset
-  tests/run_tests.sh                    # full suite (needs Docker -- see
-                                         # the docker-outside-of-docker note
-                                         # in .devcontainer/docker-compose.yml)
+  tests/run_tests.sh                    # full suite (talks to the host's
+                                         # Docker daemon -- see the socket
+                                         # mount note in docker-compose.yml)
 EOF

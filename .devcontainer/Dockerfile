@@ -18,4 +18,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         chromium \
         chromium-driver \
         jq \
+        docker.io \
     && rm -rf /var/lib/apt/lists/*
+
+# docker.io bundles a dockerd binary we never run -- only the `docker` CLI
+# is needed here, to talk to the *host's* daemon over the socket
+# docker-compose.yml bind-mounts in (Docker-outside-of-Docker, so
+# tests/run_tests.sh can drive Docker from inside this container). Not using
+# the official docker-outside-of-docker devcontainer Feature for this: that
+# feature hardcodes mounting the host's socket from the conventional
+# /var/run/docker.sock path, which doesn't exist on a host running rootless
+# Docker (this one does) -- and that hardcoded path can't be overridden from
+# project files, since the feature's own auto-generated compose override is
+# merged in last and always wins over anything declared here. Doing the CLI
+# install ourselves sidesteps that entirely.

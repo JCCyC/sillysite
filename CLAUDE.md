@@ -370,30 +370,50 @@ limits (`--memory`, `--cpus`, falling back to no CPU limit if the host doesn't s
 `.devcontainer/` provides a VS Code Dev Containers setup for local development, independent of
 the `Dockerfile`/`docker/` production deployment story above. `.devcontainer/devcontainer.json`
 configures a multi-service `docker-compose` setup (`.devcontainer/docker-compose.yml`): an `app`
-service (built from `.devcontainer/Dockerfile`, layering Python, the C/JS toolchains, and a
-headless Chromium browser for the static-pages test on top of the standard
-`mcr.microsoft.com/devcontainers/base:debian-12` image, which provides the non-root `vscode` user
-`devcontainer.json`'s `remoteUser` expects) and a `db` service (plain `postgres:16`, configured
-via `environment:` so no `.env` file is needed inside the container — `config.py`'s
-`load_dotenv()` doesn't override already-set environment variables). Two official Features
-(`ghcr.io/devcontainers/features/node:1`, `docker-outside-of-docker:1`) add Node.js and
-host-Docker access on top of the built image — the latter so `tests/run_tests.sh` (which itself
-drives Docker) can run *inside* the dev container, talking to the same daemon as the host rather
-than a nested one. `.devcontainer/post-create.sh` runs once on container creation: sets up the
-Python venv, waits for Postgres, creates tables (`import main`), seeds sample data, and builds
-the C client.
+service (built from `.devcontainer/Dockerfile`, layering Python, the C/JS toolchains, the `docker`
+CLI, and a headless Chromium browser for the static-pages test on top of the standard
+`mcr.microsoft.com/devcontainers/base:debian-12` image) and a `db` service (plain `postgres:16`,
+configured via `environment:` so no `.env` file is needed inside the container — `config.py`'s
+`load_dotenv()` doesn't override already-set environment variables). One official Feature
+(`ghcr.io/devcontainers/features/node:1`) adds Node.js on top of the built image.
+`.devcontainer/post-create.sh` runs once on container creation: sets up the Python venv, waits for
+Postgres, creates tables (`import main`), seeds sample data, and builds the C client.
 
-Two things in `.devcontainer/docker-compose.yml` are hardcoded to a specific machine and need
-adjusting on a different host:
-- The workspace bind mount path matches the host's checkout path exactly (instead of a generic
-  `/workspace`), because Docker-outside-of-Docker resolves any bind-mount/build-context path
-  given to `docker build`/`docker run` from inside the container against the *host's* filesystem,
-  not the container's view of it — the path has to be identical on both sides for that to work.
-- The Docker socket bind mount source assumes a conventional rootful setup at
-  `/var/run/docker.sock`. On a host running **rootless** Docker, the real socket lives elsewhere
-  (e.g. `/run/user/<uid>/docker.sock` — check `docker context inspect --format
-  '{{.Endpoints.docker.Host}}'`), and the mount source needs to point there instead, or the
-  `docker-outside-of-docker` feature can't reach the host daemon at all (confirmed by testing:
-  with the socket mounted from the correct rootless path, `docker ps` from inside the container
-  reaches the host daemon correctly, both as root and — after the feature's usual GID-matching
-  between the socket and the container's `docker` group — as the non-root `vscode` user).
+The `app` service's Docker access (so `tests/run_tests.sh`, which itself drives Docker, can run
+*inside* the dev container, talking to the same daemon as the host rather than a nested one) is
+hand-rolled rather than using the official `ghcr.io/devcontainers/features/docker-outside-of-docker`
+Feature, because that Feature doesn't work on this machine and can't be made to from project
+files alone — worth understanding both gotchas below in case either bites on a different host:
+
+- That Feature always declares its own mount of the host's `/var/run/docker.sock` to
+  `/var/run/docker-host.sock` inside the container, regardless of anything declared in this
+  project's own `docker-compose.yml` — confirmed by replaying the actual 3-file compose merge
+  VS Code generates (`docker compose -f <ours> -f <vscode build override> -f <vscode
+  containerFeatures override> config`): a same-target mount declared in our own file is
+  discarded, since the Feature's auto-generated override is merged in last and always wins. This
+  host runs **rootless** Docker, whose real socket lives at `/run/user/<uid>/docker.sock` (check
+  `docker context inspect --format '{{.Endpoints.docker.Host}}'`) rather than the conventional
+  `/var/run/docker.sock` the Feature hardcodes, so its auto-mount always fails to resolve and the
+  container never starts. Dropping the Feature and installing `docker.io` directly in the
+  Dockerfile instead sidesteps it entirely: `docker-compose.yml`'s own mount of the real rootless
+  socket to the conventional in-container path is then the *only* mount involved, and nothing
+  auto-generated can override it.
+- `remoteUser` is `root`, not the base image's non-root `vscode` user. Rootless Docker maps
+  container UID 0 transparently to the real host user (the one running the rootless daemon), but
+  maps any *other* container UID into an unrelated subordinate range (`/etc/subuid`) — so a
+  non-root user has no real relationship to files the host user owns in the bind-mounted
+  workspace, even though both may show as the same UID number inside the container. Confirmed
+  directly: `touch` on a file already in the bind-mounted workspace succeeded as root but failed
+  with `Permission denied` as `vscode`, despite `id` showing both as UID 1000. This is safe
+  specifically because Docker is rootless here: container root carries no more host privilege
+  than the unprivileged user already running the daemon.
+
+One thing in `.devcontainer/docker-compose.yml` is hardcoded to a specific machine and needs
+adjusting on a different host: the workspace bind mount path matches the host's checkout path
+exactly (instead of a generic `/workspace`), because the `docker` CLI inside the container talks
+to the *host's* daemon — any bind-mount/build-context path it's given (e.g. by
+`tests/run_tests.sh`) is resolved against the host's filesystem, not the container's view of it,
+so the path has to be identical on both sides for that to work. The Docker socket source path
+(`/run/user/<uid>/docker.sock`) is similarly specific to this rootless setup and needs checking
+on a different host (same `docker context inspect` command as above) — a conventional rootful
+host would mount the standard `/var/run/docker.sock` instead.

@@ -6,8 +6,7 @@
   "shutdownAction": "stopCompose",
 
   "features": {
-    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
   },
 
   "forwardPorts": [8000],
@@ -26,5 +25,15 @@
   },
 
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "remoteUser": "vscode"
+  // root, not the base image's non-root "vscode" user: this host's rootless
+  // Docker remaps container UID 0 transparently to the real host user (the
+  // one running the rootless daemon), but remaps any *other* container UID
+  // into an unrelated subordinate range (/etc/subuid) -- so a non-root user
+  // has no real relationship to files the host user owns in the
+  // bind-mounted workspace (confirmed: writes that work as root fail as
+  // "vscode" with Permission denied, even though both show as UID 1000
+  // inside the container). Safe specifically because Docker is rootless
+  // here: container root carries no more host privilege than the
+  // unprivileged user already running the daemon.
+  "remoteUser": "root"
 }

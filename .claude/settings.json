@@ -54,10 +54,24 @@
       "Bash(npx --version)",
       "Bash(npx --yes @devcontainers/cli up --workspace-folder .)",
       "Bash(ls -la /var/run/docker.sock *)",
-      "Read(//var/run/**)"
+      "Read(//var/run/**)",
+      "Bash(docker network *)",
+      "Bash(docker start *)",
+      "Bash(cp /home/jcastro/src/claudetest/sillysite/.devcontainer/docker-compose.yml /tmp/test-compose-base.yml)",
+      "Bash(python3 -)",
+      "Bash(sed -n '/services:/,/^networks:/p')",
+      "Bash(rm /home/jcastro/src/claudetest/sillysite/.devcontainer/docker-compose.test.yml)",
+      "Read(//run/**)",
+      "Bash(sudo -n true)",
+      "Bash(lsattr /home/jcastro/src/claudetest/sillysite/.venv/pyvenv.cfg)",
+      "Bash(getfacl /home/jcastro/src/claudetest/sillysite/.venv/pyvenv.cfg)",
+      "Bash(mount)",
+      "Read(//etc/**)",
+      "Bash(rm /home/jcastro/src/claudetest/sillysite/.devcontainer/devcontainer-lock.json *)"
     ],
     "additionalDirectories": [
-      "/home/jcastro/src/claudetest/sillysite"
+      "/home/jcastro/src/claudetest/sillysite",
+      "/home/jcastro/src/claudetest/sillysite/.devcontainer"
     ]
   }
 }

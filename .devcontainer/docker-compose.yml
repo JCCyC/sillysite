@@ -16,9 +16,9 @@ services:
       - ..:/home/jcastro/src/claudetest/sillysite:cached
       # This host runs rootless Docker, whose socket lives at
       # /run/user/1000/docker.sock rather than the conventional
-      # /var/run/docker.sock the docker-outside-of-docker feature expects.
-      # Mapping it to the conventional path here means the feature needs no
-      # special configuration. Hardcoded to this user/machine like the
+      # /var/run/docker.sock. Mapped to the conventional in-container path so
+      # the `docker` CLI installed in the Dockerfile finds it with no extra
+      # config (DOCKER_HOST etc.). Hardcoded to this user/machine like the
       # workspace path above -- check `docker context inspect --format
       # '{{.Endpoints.docker.Host}}'` on a different machine and adjust the
       # source path if it differs.
