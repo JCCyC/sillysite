@@ -1,4 +1,4 @@
-# Deploying Silly Site
+# Deploying SillySite
 
 This directory contains everything needed to run the API and its PostgreSQL
 database in a single Docker container.

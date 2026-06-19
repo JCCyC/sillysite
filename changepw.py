@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Change a user's password on the Silly Site API.
+"""Change a user's password on the SillySite API.
 
 Usage:
     ./changepw.py <url> <username>

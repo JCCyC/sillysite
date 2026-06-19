@@ -1,7 +1,7 @@
-# Silly Site C client library
+# SillySite C client library
 
 A C library (`libsillysite`) and two command-line programs that interact
-with the Silly Site API.
+with the SillySite API.
 
 ## Prerequisites
 

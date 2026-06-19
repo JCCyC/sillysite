@@ -1,5 +1,5 @@
 /*
- * Silly Site API client library.
+ * SillySite API client library.
  *
  * Works unmodified in Node (CommonJS, via require) and in the browser
  * (via a plain <script> tag, exposing window.SillySite) — no dependencies,

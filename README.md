@@ -1,4 +1,4 @@
-# Silly Site
+# SillySite
 
 A FastAPI app meant to double as a template: the auth/session/user/admin scaffolding has no
 knowledge of Formula One at all, which is just the example business logic demonstrating it. See

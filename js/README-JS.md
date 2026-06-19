@@ -1,7 +1,7 @@
-# Silly Site JavaScript client library
+# SillySite JavaScript client library
 
 A JavaScript library (`sillysite.js`) and three Node CLI scripts that interact
-with the Silly Site API. The library works unmodified in Node (via `require`)
+with the SillySite API. The library works unmodified in Node (via `require`)
 and in the browser (via a plain `<script>` tag, exposing `window.SillySite`).
 
 ## Prerequisites

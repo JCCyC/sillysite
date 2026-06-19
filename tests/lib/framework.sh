@@ -24,7 +24,7 @@ FAILURE_SUMMARY=()
 run_all_tests() {
     local total="${#TEST_FN[@]}"
     {
-        echo "Silly Site test suite report"
+        echo "SillySite test suite report"
         echo "Run started: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "Total tests: $total"
         echo

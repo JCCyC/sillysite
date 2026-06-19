@@ -41,7 +41,10 @@
       "Bash(.venv/bin/python3 -c ' *)",
       "Bash(git rm *)",
       "Bash(bash -n tests/cases/95_bindings_c.sh)",
-      "Bash(make clean *)"
+      "Bash(make clean *)",
+      "Bash(bash -n tests/run_tests.sh tests/lib/framework.sh tests/cases/10_public.sh)",
+      "Bash(node -c js/sillysite.js)",
+      "Bash(python3)"
     ]
   }
 }

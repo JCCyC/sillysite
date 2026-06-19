@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Log in to the Silly Site API and print a session token.
+"""Log in to the SillySite API and print a session token.
 
 Usage:
     ./login.py <url> <username>

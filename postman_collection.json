@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Silly Site API",
-    "description": "Collection for testing the Silly Site FastAPI app.",
+    "name": "SillySite API",
+    "description": "Collection for testing the SillySite FastAPI app.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -41,7 +41,7 @@
           }
         },
         {
-          "name": "Sillysite JS",
+          "name": "SillySite JS",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/sillysite.js"

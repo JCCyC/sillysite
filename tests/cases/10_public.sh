@@ -38,7 +38,7 @@ register_test test_favicon "GET /favicon.ico serves the icon" \
 test_login_html_no_key() {
     api GET /login.html
     assert_eq 200 "$STATUS" "status" || return 1
-    assert_contains "$BODY" "Silly Site" "body"
+    assert_contains "$BODY" "SillySite" "body"
 }
 register_test test_login_html_no_key "GET /login.html serves the login form" \
     "GET /login.html with no apikey serves static/login.html (200)"
@@ -55,7 +55,7 @@ register_test test_login_html_with_valid_key "GET /login.html skips form if logg
 test_login_html_with_invalid_key() {
     api GET /login.html "bogus-not-a-real-key"
     assert_eq 200 "$STATUS" "status" || return 1
-    assert_contains "$BODY" "Silly Site" "body"
+    assert_contains "$BODY" "SillySite" "body"
 }
 register_test test_login_html_with_invalid_key "GET /login.html ignores bad apikey" \
     "GET /login.html with an invalid/expired apikey still serves the login form (200), not an error"

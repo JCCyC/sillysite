@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Silly Site test suite.
+# SillySite test suite.
 #
 # Usage: tests/run_tests.sh
 #
