@@ -136,6 +136,17 @@ cp .env.example .env
 
 or `./run.sh`, which `cd`s to the repo root first.
 
+## Dev container
+
+If you have the VS Code Dev Containers extension installed, "Reopen in Container" picks up
+`.devcontainer/devcontainer.json` and builds a ready-to-use environment (Python venv, Postgres,
+the C/JS toolchains, and a headless-Chrome browser for the static-pages test) via
+`docker-compose`, then runs `.devcontainer/post-create.sh` once to set up the venv, create
+tables, and seed sample data. See the comments in `.devcontainer/docker-compose.yml` for two
+machine-specific things you'll need to adjust if you're not on the original author's exact setup:
+the workspace bind mount path, and the host Docker socket path (this one matters most if your
+host runs rootless Docker, where the socket isn't at the conventional `/var/run/docker.sock`).
+
 ## Seeding data
 
 ```bash

@@ -44,7 +44,20 @@
       "Bash(make clean *)",
       "Bash(bash -n tests/run_tests.sh tests/lib/framework.sh tests/cases/10_public.sh)",
       "Bash(node -c js/sillysite.js)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose --version)",
+      "Bash(mkdir -p /home/jcastro/src/claudetest/sillysite/.devcontainer *)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('.devcontainer/devcontainer.json'\\)\\)\")",
+      "Bash(bash -n .devcontainer/post-create.sh)",
+      "Bash(chmod +x .devcontainer/post-create.sh)",
+      "Bash(npx --version)",
+      "Bash(npx --yes @devcontainers/cli up --workspace-folder .)",
+      "Bash(ls -la /var/run/docker.sock *)",
+      "Read(//var/run/**)"
+    ],
+    "additionalDirectories": [
+      "/home/jcastro/src/claudetest/sillysite"
     ]
   }
 }

@@ -1,0 +1,49 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      # Mounted at the SAME absolute path it has on the host. This repo's
+      # own test suite (tests/run_tests.sh, fast_check.sh) drives Docker
+      # via absolute host paths (docker build/run against $PROJECT_ROOT);
+      # since Docker-outside-of-Docker talks to the *host's* Docker daemon,
+      # any path it's given has to resolve on the host, not just inside
+      # this container. Matching the path exactly sidesteps that mismatch
+      # entirely, at the cost of hardcoding this machine's checkout
+      # location -- update this (and workspaceFolder in devcontainer.json)
+      # if you ever move the clone.
+      - ..:/home/jcastro/src/claudetest/sillysite:cached
+      # This host runs rootless Docker, whose socket lives at
+      # /run/user/1000/docker.sock rather than the conventional
+      # /var/run/docker.sock the docker-outside-of-docker feature expects.
+      # Mapping it to the conventional path here means the feature needs no
+      # special configuration. Hardcoded to this user/machine like the
+      # workspace path above -- check `docker context inspect --format
+      # '{{.Endpoints.docker.Host}}'` on a different machine and adjust the
+      # source path if it differs.
+      - /run/user/1000/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_SCHEMA: public
+      DB_NAME: sillysite
+      DB_USER: sillysite
+      DB_PASSWORD: sillysite
+      API_KEY: devkey
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sillysite
+      POSTGRES_PASSWORD: sillysite
+      POSTGRES_DB: sillysite
+    volumes:
+      - sillysite-devcontainer-pgdata:/var/lib/postgresql/data
+
+volumes:
+  sillysite-devcontainer-pgdata:

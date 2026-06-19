@@ -49,6 +49,7 @@ not the file itself.
 - `tests/lib/*`, `tests/run_tests.sh`, `tests/fast_check.sh`, `tests/hook_fast_check.sh`, and all
   of `tests/cases/` except `60_business.sh` — the generic test framework and coverage.
 - `Dockerfile`, `docker/*` — the deployment story doesn't know or care what the business logic is.
+- `.devcontainer/*` — the dev container setup doesn't know or care what the business logic is.
 
 This repo is marked as a GitHub template repository (Settings → Template repository), so new
 businesses should start via "Use this template" / `gh repo create --template` — a clean,
@@ -363,3 +364,36 @@ settings from `docker/deploy.env`, see `docker/deploy.env.example`) builds the i
 container with the configured port mappings (API port, optional PostgreSQL port) and resource
 limits (`--memory`, `--cpus`, falling back to no CPU limit if the host doesn't support it). See
 `docker/DEPLOY.md` for end-user deployment instructions.
+
+## Dev container
+
+`.devcontainer/` provides a VS Code Dev Containers setup for local development, independent of
+the `Dockerfile`/`docker/` production deployment story above. `.devcontainer/devcontainer.json`
+configures a multi-service `docker-compose` setup (`.devcontainer/docker-compose.yml`): an `app`
+service (built from `.devcontainer/Dockerfile`, layering Python, the C/JS toolchains, and a
+headless Chromium browser for the static-pages test on top of the standard
+`mcr.microsoft.com/devcontainers/base:debian-12` image, which provides the non-root `vscode` user
+`devcontainer.json`'s `remoteUser` expects) and a `db` service (plain `postgres:16`, configured
+via `environment:` so no `.env` file is needed inside the container — `config.py`'s
+`load_dotenv()` doesn't override already-set environment variables). Two official Features
+(`ghcr.io/devcontainers/features/node:1`, `docker-outside-of-docker:1`) add Node.js and
+host-Docker access on top of the built image — the latter so `tests/run_tests.sh` (which itself
+drives Docker) can run *inside* the dev container, talking to the same daemon as the host rather
+than a nested one. `.devcontainer/post-create.sh` runs once on container creation: sets up the
+Python venv, waits for Postgres, creates tables (`import main`), seeds sample data, and builds
+the C client.
+
+Two things in `.devcontainer/docker-compose.yml` are hardcoded to a specific machine and need
+adjusting on a different host:
+- The workspace bind mount path matches the host's checkout path exactly (instead of a generic
+  `/workspace`), because Docker-outside-of-Docker resolves any bind-mount/build-context path
+  given to `docker build`/`docker run` from inside the container against the *host's* filesystem,
+  not the container's view of it — the path has to be identical on both sides for that to work.
+- The Docker socket bind mount source assumes a conventional rootful setup at
+  `/var/run/docker.sock`. On a host running **rootless** Docker, the real socket lives elsewhere
+  (e.g. `/run/user/<uid>/docker.sock` — check `docker context inspect --format
+  '{{.Endpoints.docker.Host}}'`), and the mount source needs to point there instead, or the
+  `docker-outside-of-docker` feature can't reach the host daemon at all (confirmed by testing:
+  with the socket mounted from the correct rootless path, `docker ps` from inside the container
+  reaches the host daemon correctly, both as root and — after the feature's usual GID-matching
+  between the socket and the container's `docker` group — as the non-root `vscode` user).
