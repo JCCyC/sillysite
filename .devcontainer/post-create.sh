@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Runs once when the dev container is first created (not on every reopen).
+# Runs every time the dev container is (re)created -- including "Rebuild
+# Container", which keeps the named `db` volume from any previous run -- not
+# just the very first time. Not on every reopen of an already-existing,
+# still-running container, though.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -21,10 +24,21 @@ done
 echo "[post-create] Creating tables and default admin/config rows..."
 .venv/bin/python -c "import main" > /dev/null
 
-echo "[post-create] Seeding sample F1 data (one-off; re-running this script"
-echo "[post-create] later would duplicate it -- wipe the 'db' volume first if"
-echo "[post-create] you want a truly fresh reseed)..."
-.venv/bin/python seed.py
+echo "[post-create] Seeding sample F1 data (skipped if the 'db' volume was"
+echo "[post-create] reused from a previous run and already has it; wipe the"
+echo "[post-create] volume first for a truly fresh reseed)..."
+if .venv/bin/python -c "
+from database import SessionLocal
+import models
+db = SessionLocal()
+has_data = db.query(models.Team).first() is not None
+db.close()
+exit(0 if has_data else 1)
+"; then
+    echo "[post-create] Data already present -- skipping."
+else
+    .venv/bin/python seed.py
+fi
 
 echo "[post-create] Building the C client..."
 (cd c && make)

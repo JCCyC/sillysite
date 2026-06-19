@@ -380,6 +380,12 @@ configured via `environment:` so no `.env` file is needed inside the container �
 (`npm install -g @anthropic-ai/claude-code`; the `anthropic.claude-code` VS Code extension is
 also in `devcontainer.json`'s `customizations.vscode.extensions`), sets up the Python venv, waits
 for Postgres, creates tables (`import main`), seeds sample data, and builds the C client.
+"Once" means once per *container* creation, not once ever — "Rebuild Container" recreates the
+container but keeps the named `db` volume from any previous run, so `postCreateCommand` (and
+this script) runs again against an already-seeded database. `seed.py` itself has no such
+guard (it's meant to be simple — see "Adapting this template" above), so the script checks
+whether any `Team` rows already exist before calling it, skipping with a log message if so,
+rather than crashing on a duplicate-key `IntegrityError` on the second run.
 `docker-compose.yml` also bind-mounts the host's `~/.claude` to `/root/.claude` so Claude Code is
 already logged in inside the container, sharing settings/memory with the host rather than
 needing a separate login.
