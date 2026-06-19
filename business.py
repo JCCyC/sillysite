@@ -33,6 +33,7 @@ ABOUT_MESSAGES = [
     "Purple sector one.",
     "Checkered flag incoming.",
     "Leave me alone, I know what I'm doing.",
+    "Let's add it to the words of wisdom.",
 ]
 
 
