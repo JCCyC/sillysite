@@ -128,15 +128,16 @@ prepare commits locally and let the user push manually.
   can race to insert the same row on a cold start; the insert-then-commit for each is wrapped in
   its own `try`/`except IntegrityError` (rollback and move on) rather than a single batch commit,
   since whichever worker loses the race finding the row already there is exactly the desired
-  outcome, not an error. An
-  `@app.on_event("startup")` hook starts a background daemon thread that wakes up every
-  `session_cleanup_interval_seconds` (`app_config`, default 15 minutes) and, in a single DB
-  session, reads both config values and deletes any rows in `sessions` whose `expires_at` is more
-  than `session_cleanup_grace_seconds` (`app_config`, default 1 hour) in the past. The thread is
-  started from the startup hook rather than at module level specifically because `uvicorn
-  --reload` imports `main.py` twice (once in the reloader process, once in the worker
-  subprocess) — module-level side effects would start the thread twice, producing duplicate
-  cleanup runs every cycle; the startup hook only fires once, inside the actual ASGI worker.
+  outcome, not an error. A `lifespan` async context manager (passed to `FastAPI(lifespan=...)`,
+  the non-deprecated replacement for `@app.on_event("startup")`) starts a background daemon
+  thread on entry that wakes up every `session_cleanup_interval_seconds` (`app_config`, default
+  15 minutes) and, in a single DB session, reads both config values and deletes any rows in
+  `sessions` whose `expires_at` is more than `session_cleanup_grace_seconds` (`app_config`,
+  default 1 hour) in the past. The thread is started from `lifespan` rather than at module level
+  specifically because `uvicorn --reload` imports `main.py` twice (once in the reloader process,
+  once in the worker subprocess) — module-level side effects would start the thread twice,
+  producing duplicate cleanup runs every cycle; `lifespan` only runs once, inside the actual ASGI
+  worker.
   Formula One routes are mounted via `app.include_router(business.router)` (see `business.py`
   below).
 

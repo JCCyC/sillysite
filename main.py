@@ -1,6 +1,7 @@
 import secrets
 import threading
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
@@ -16,8 +17,6 @@ import models
 import schemas
 from auth import require_admin, require_user
 from database import SessionLocal, engine, get_db
-
-app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -115,12 +114,15 @@ def _session_cleanup_loop():
         time.sleep(interval_seconds)
 
 
-app.include_router(business.router)
-
-
-@app.on_event("startup")
-async def _start_session_cleanup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     threading.Thread(target=_session_cleanup_loop, daemon=True).start()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(business.router)
 
 
 @app.get("/", include_in_schema=False)
