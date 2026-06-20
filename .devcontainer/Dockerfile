@@ -1,5 +1,5 @@
 # Dev Container image: everything needed to edit, run, and test SillySite
-# interactively (Python, the C, JS, and Java bindings' toolchains, and a
+# interactively (Python, the C, JS, Java, and C# bindings' toolchains, and a
 # browser for the static-pages test). Built on the standard Dev Containers
 # base image, which already sets up the non-root `vscode` user that
 # devcontainer.json's "remoteUser" expects.
@@ -18,9 +18,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         chromium \
         chromium-driver \
         openjdk-17-jdk-headless \
+        mono-complete \
         jq \
         docker.io \
     && rm -rf /var/lib/apt/lists/*
+
+# mono-complete (csharp/) is the same upstream Mono release (6.8.0.105) as
+# Ubuntu 22.04's -- the base of Linux Mint 21.x, this project's other
+# target environment -- confirmed by hand to install cleanly there too with
+# no extra repository (no Mono Project PPA needed on either distro). See
+# csharp/README-CSHARP.md.
 
 # docker.io bundles a dockerd binary we never run -- only the `docker` CLI
 # is needed here, to talk to the *host's* daemon over the socket

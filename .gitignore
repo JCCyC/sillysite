@@ -201,6 +201,10 @@ cython_debug/
 #   and can be added to the global gitignore or merged into this file. However, if you prefer, 
 #   you could uncomment the following to ignore the entire vscode folder
 # .vscode/
+# VS Code's C# tooling (OmniSharp/C# Dev Kit) auto-probes any .cs files in
+# the workspace (csharp/) and caches a discovery file here at the repo
+# root -- unrelated to this project's own build output.
+/dotnet/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
@@ -233,6 +237,13 @@ c/changepw
 # wrapper scripts, not build output, so they're intentionally not listed here.
 java/*.class
 java/classes.stamp
+
+# C# build artifacts (csharp/) -- csharp/login and csharp/changepw are
+# checked-in wrapper scripts, not build output, so they're intentionally
+# not listed here.
+csharp/*.dll
+csharp/*.exe
+csharp/*.mdb
 
 # Test suite generated artifacts (tests/)
 tests/report.txt

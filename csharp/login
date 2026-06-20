@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thin wrapper so the C# client can be invoked the same way as the C
+# client's compiled ./login binary, rather than needing `mono Login.exe`
+# spelled out at every call site.
+exec mono "$(dirname "$0")/Login.exe" "$@"

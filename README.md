@@ -163,6 +163,7 @@ available for:
 - **C** — see [`c/README-C.md`](c/README-C.md)
 - **JavaScript** (Node and browser) — see [`js/README-JS.md`](js/README-JS.md)
 - **Java** — see [`java/README-JAVA.md`](java/README-JAVA.md)
+- **C#** (Mono) — see [`csharp/README-CSHARP.md`](csharp/README-CSHARP.md)
 
 More languages are planned.
 
