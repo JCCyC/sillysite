@@ -96,6 +96,9 @@
       <dt>Full name</dt>
       <dd id="full_name"></dd>
 
+      <dt>Email</dt>
+      <dd id="email"></dd>
+
       <dt>Role</dt>
       <dd><span class="badge" id="role"></span></dd>
 
@@ -132,6 +135,16 @@ function formatTimestamp(value) {
 
     document.getElementById("username").textContent = whoami.username;
     document.getElementById("full_name").textContent = whoami.full_name;
+
+    const emailEl = document.getElementById("email");
+    if (whoami.email) {
+      const link = document.createElement("a");
+      link.href = "mailto:" + whoami.email;
+      link.textContent = whoami.email;
+      emailEl.replaceChildren(link);
+    } else {
+      emailEl.textContent = "—";
+    }
 
     const role = document.getElementById("role");
     role.textContent = whoami.is_admin ? "Admin" : "User";

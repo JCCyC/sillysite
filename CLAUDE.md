@@ -195,7 +195,8 @@ prepare commits locally and let the user push manually.
   `GrandPrix`. A `Driver` holds a person's name, nationality, and date of birth; their car number
   for a given season is tracked separately in `DriverNumber` (since drivers can change numbers
   between seasons). `GrandPrix` records the winning driver and team directly (since drivers can
-  change teams mid-season). It also defines `User` (username, full name, `is_admin` flag, plus PBKDF2
+  change teams mid-season). It also defines `User` (username, full name, an optional `email` —
+  `NULL` by default, including for the default `admin` profile — `is_admin` flag, plus PBKDF2
   salt/hash/iterations — never a plaintext password), `UserSession` (one-time login challenges
   and, once redeemed, the issued token, its expiry, the source IP it's restricted to, and
   `authenticated_at`, the time the token was issued), and `AppConfig` (key/value settings, e.g.
@@ -205,7 +206,11 @@ prepare commits locally and let the user push manually.
   including `*Create` schemas (all fields required, used for `POST`) and `*Update` schemas
   (all fields optional, used for `PUT` partial updates), the `User`/`UserCreate`/`UserUpdate`
   and login challenge/response schemas, and `SeasonGrandPrix` (the `/season/{year}` response
-  shape: sequence number, name, track name, and winning driver/team *names*).
+  shape: sequence number, name, track name, and winning driver/team *names*). `User`'s and
+  `UserCreate`'s/`UserUpdate`'s `email` field is `EmailStr | None` — pydantic's `EmailStr` (the
+  `email-validator` package, a `requirements.txt` dependency) checks that a provided value is a
+  well-formed address with `check_deliverability=False`, i.e. syntax only, no DNS/MX lookup or
+  other network check; omitting the field (or passing `null`) leaves it unset.
 - `login.py` is a CLI script (`./login.py <url> <username>`) that prompts for a password,
   performs the challenge/response login flow, and prints the resulting session token to stdout
   (or an error to stderr).
@@ -269,7 +274,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, the C, JS, Java, and C# client bindings, and the static browser pages (88 tests as of this
+scripts, the C, JS, Java, and C# client bindings, and the static browser pages (95 tests as of this
 writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
@@ -404,8 +409,9 @@ carries a valid `X-API-Key`/`apikey` (header or query param, static or session),
 which loads `/sillysite.js` and calls `SillySite.get(window.location.origin, apikey, "/whoami")`
 (using the `apikey` query parameter from its own URL, if present) and displays the current user's
 information nicely, with a "Log out" link (using the same `apikey`) shown if there's an associated
-session. If the request doesn't carry a valid `X-API-Key`/`apikey` (header or query param, static
-or session), it redirects to `/login.html` instead.
+session. The user's email, if present, is rendered as a `mailto:` link (an em dash otherwise — the
+field is optional, see `schemas.py`). If the request doesn't carry a valid `X-API-Key`/`apikey`
+(header or query param, static or session), it redirects to `/login.html` instead.
 
 ## /changepw.html
 

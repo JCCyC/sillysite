@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class TeamBase(BaseModel):
@@ -110,12 +110,14 @@ class WinnerCount(BaseModel):
 class UserCreate(BaseModel):
     username: str
     full_name: str
+    email: EmailStr | None = None
     password: str
     is_admin: bool = False
 
 
 class UserUpdate(BaseModel):
     full_name: str | None = None
+    email: EmailStr | None = None
     password: str | None = None
     is_admin: bool | None = None
 
@@ -126,6 +128,7 @@ class User(BaseModel):
     id: int
     username: str
     full_name: str
+    email: EmailStr | None = None
     is_admin: bool
     created_at: datetime
 

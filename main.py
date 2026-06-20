@@ -65,6 +65,7 @@ def _ensure_admin_user():
         conn.execute(
             text("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR NOT NULL DEFAULT ''")
         )
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR"))
         conn.commit()
 
     db = SessionLocal()
@@ -191,6 +192,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(
         username=user.username,
         full_name=user.full_name,
+        email=user.email,
         password_salt=salt,
         password_hash=password_hash,
         password_iterations=iterations,

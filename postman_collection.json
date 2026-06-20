@@ -341,7 +341,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"full_name\": \"Test User\",\n  \"password\": \"correcthorsebatterystaple\",\n  \"is_admin\": false\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"full_name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"correcthorsebatterystaple\",\n  \"is_admin\": false\n}"
             },
             "url": "{{base_url}}/users"
           }
@@ -362,7 +362,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"is_admin\": true\n}"
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"is_admin\": true\n}"
             },
             "url": "{{base_url}}/users/testuser"
           }
