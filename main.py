@@ -205,6 +205,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 SELF_UPDATABLE_FIELDS = {"full_name", "email"}
+NOBODY_UPDATABLE_FIELDS = {"created_at"}
 
 
 @app.put(
@@ -223,6 +224,11 @@ def update_user(
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     fields = user.model_dump(exclude_unset=True)
+    if set(fields) & NOBODY_UPDATABLE_FIELDS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot change {', '.join(sorted(NOBODY_UPDATABLE_FIELDS))}",
+        )
     if not caller.is_admin and not set(fields) <= SELF_UPDATABLE_FIELDS:
         raise HTTPException(
             status_code=403,

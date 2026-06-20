@@ -120,6 +120,10 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     password: str | None = None
     is_admin: bool | None = None
+    # Accepted (so a caller gets an explicit error -- see NOBODY_UPDATABLE_FIELDS in main.py --
+    # rather than the field silently vanishing the way an undeclared one would, since BaseModel's
+    # default extra="ignore" drops unrecognized fields with no trace).
+    created_at: datetime | None = None
 
 
 class User(BaseModel):

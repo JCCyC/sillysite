@@ -139,6 +139,35 @@ test_users_put_malformed_email() {
 register_test test_users_put_malformed_email "PUT rejects a malformed email" \
     "PUT /users/{username} with a syntactically invalid email fails with 422"
 
+test_users_put_created_at_admin_rejected() {
+    local user="$(unique_name usersputcreatedat)"
+    create_user "$user" "pw_${RANDOM}" || { echo "setup failed"; return 1; }
+    local original_created_at
+    original_created_at="$(json_get "$BODY" "['created_at']")"
+    api PUT "/users/$user" "$ADMIN_KEY" '{"created_at":"2000-01-01T00:00:00Z"}'
+    assert_eq 400 "$STATUS" "status" || return 1
+    assert_contains "$BODY" "Cannot change created_at" || return 1
+    api GET /users "$ADMIN_KEY"
+    assert_contains "$BODY" "\"username\":\"$user\"" || return 1
+    assert_contains "$BODY" "$original_created_at"
+}
+register_test test_users_put_created_at_admin_rejected "even admin can't change created_at" \
+    "PUT /users/{username} with created_at fails with 400 for an admin caller too, and the value is unchanged"
+
+test_users_put_created_at_self_rejected() {
+    new_logged_in_user usersputcreatedatself || { echo "setup failed"; return 1; }
+    api GET /whoami "$TOKEN"
+    local original_created_at
+    original_created_at="$(json_get "$BODY" "['created_at']")"
+    api PUT "/users/$TEST_USERNAME" "$TOKEN" '{"created_at":"2000-01-01T00:00:00Z"}'
+    assert_eq 400 "$STATUS" "status" || return 1
+    assert_contains "$BODY" "Cannot change created_at" || return 1
+    api GET /whoami "$TOKEN"
+    assert_contains "$BODY" "$original_created_at"
+}
+register_test test_users_put_created_at_self_rejected "a user can't change their own created_at" \
+    "PUT /users/{own username} with created_at fails with 400, not just the 403 self-update field check"
+
 test_users_put_self_allowed_fields() {
     new_logged_in_user usersputself || { echo "setup failed"; return 1; }
     api PUT "/users/$TEST_USERNAME" "$TOKEN" "{\"full_name\":\"Self Updated\",\"email\":\"$TEST_USERNAME@example.com\"}"

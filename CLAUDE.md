@@ -163,8 +163,13 @@ prepare commits locally and let the user push manually.
     built from that same set, so it can't drift out of sync with the fields actually allowed) —
     including fields that *are* in the body alongside allowed ones, so a mixed request can't sneak
     a privilege change through by pairing it with a legitimate one. Password changes for one's own
-    account still go only through `/change-password`, never this endpoint. Everything else on
-    `/users` (`GET`, `POST`, `DELETE`),
+    account still go only through `/change-password`, never this endpoint. Separately,
+    `NOBODY_UPDATABLE_FIELDS` (currently just `created_at`) is checked first and applies
+    regardless of caller — even an admin gets 400 `"Cannot change created_at"` (same
+    sorted-set-driven message construction as `SELF_UPDATABLE_FIELDS`'s) if it's present in the
+    body at all; `created_at` is otherwise silently dropped as an unrecognized field by
+    `UserUpdate`'s default `extra="ignore"`, so it's declared there specifically so this check has
+    something in `exclude_unset` to catch. Everything else on `/users` (`GET`, `POST`, `DELETE`),
     plus `GET /config` and `GET /activeusers`, still requires an admin (`require_admin`).
 - `business.py` holds all Formula One business logic, as a FastAPI `APIRouter` mounted by
   `main.py`:
@@ -284,7 +289,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, the C, JS, Java, and C# client bindings, and the static browser pages (100 tests as of this
+scripts, the C, JS, Java, and C# client bindings, and the static browser pages (102 tests as of this
 writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
