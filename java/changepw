@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thin wrapper so the Java client can be invoked the same way as the C
+# client's compiled ./changepw binary, rather than needing `java -cp ...
+# ChangePw` spelled out at every call site.
+exec java -cp "$(dirname "$0")" ChangePw "$@"

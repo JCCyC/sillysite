@@ -229,6 +229,11 @@ c/*.a
 c/login
 c/changepw
 
+# Java build artifacts (java/) -- java/login and java/changepw are checked-in
+# wrapper scripts, not build output, so they're intentionally not listed here.
+java/*.class
+java/classes.stamp
+
 # Test suite generated artifacts (tests/)
 tests/report.txt
 tests/build.log

@@ -162,6 +162,7 @@ Besides the Python CLI scripts (`login.py`, `changepw.py`) at the repo root, cli
 available for:
 - **C** — see [`c/README-C.md`](c/README-C.md)
 - **JavaScript** (Node and browser) — see [`js/README-JS.md`](js/README-JS.md)
+- **Java** — see [`java/README-JAVA.md`](java/README-JAVA.md)
 
 More languages are planned.
 

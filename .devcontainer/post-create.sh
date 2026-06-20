@@ -43,6 +43,9 @@ fi
 echo "[post-create] Building the C client..."
 (cd c && make)
 
+echo "[post-create] Building the Java client..."
+(cd java && make)
+
 cat <<'EOF'
 
 Dev container ready.
