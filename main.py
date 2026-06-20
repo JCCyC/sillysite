@@ -204,16 +204,30 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 
+SELF_UPDATABLE_FIELDS = {"full_name", "email"}
+
+
 @app.put(
     "/users/{username}",
     response_model=schemas.User,
-    dependencies=[Depends(require_admin)],
 )
-def update_user(username: str, user: schemas.UserUpdate, db: Session = Depends(get_db)):
+def update_user(
+    username: str,
+    user: schemas.UserUpdate,
+    caller: models.User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    if not caller.is_admin and caller.username != username:
+        raise HTTPException(status_code=403, detail="Admin privileges required to modify other users")
     db_user = db.query(models.User).filter(models.User.username == username).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     fields = user.model_dump(exclude_unset=True)
+    if not caller.is_admin and not set(fields) <= SELF_UPDATABLE_FIELDS:
+        raise HTTPException(
+            status_code=403,
+            detail=f"You can only update your own {', '.join(sorted(SELF_UPDATABLE_FIELDS))}",
+        )
     if "password" in fields:
         password = fields.pop("password")
         salt, password_hash, iterations = auth.hash_password(password)

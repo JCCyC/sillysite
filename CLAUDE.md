@@ -154,8 +154,18 @@ prepare commits locally and let the user push manually.
     `{"msg": "User <username> logged out"}` — it fails with `400` if called with the static
     `.env` `API_KEY`, which has no session to invalidate.
   - `GET` on the Formula One endpoints requires any logged-in user (`require_user`).
-  - Everything else (writes on Formula One data, all of `/users`, `GET /config`, and
-    `GET /activeusers`) requires an admin (`require_admin`).
+  - `PUT /users/{username}` requires any logged-in user (`require_user`), not `require_admin` —
+    but a non-admin caller may only target their *own* username (403
+    `"Admin privileges required to modify other users"` otherwise) and may only set
+    `full_name`/`email` (`SELF_UPDATABLE_FIELDS`); a body containing any other field (`is_admin`,
+    `password`, or any future field added to `UserUpdate`) is rejected wholesale with 403
+    `"You can only update your own <sorted SELF_UPDATABLE_FIELDS, comma-joined>"` (the message is
+    built from that same set, so it can't drift out of sync with the fields actually allowed) —
+    including fields that *are* in the body alongside allowed ones, so a mixed request can't sneak
+    a privilege change through by pairing it with a legitimate one. Password changes for one's own
+    account still go only through `/change-password`, never this endpoint. Everything else on
+    `/users` (`GET`, `POST`, `DELETE`),
+    plus `GET /config` and `GET /activeusers`, still requires an admin (`require_admin`).
 - `business.py` holds all Formula One business logic, as a FastAPI `APIRouter` mounted by
   `main.py`:
   `/about` (returns `{"msg": "<random message>"}` chosen from a small list of candidate
@@ -274,7 +284,7 @@ prepare commits locally and let the user push manually.
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, the C, JS, Java, and C# client bindings, and the static browser pages (95 tests as of this
+scripts, the C, JS, Java, and C# client bindings, and the static browser pages (100 tests as of this
 writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test

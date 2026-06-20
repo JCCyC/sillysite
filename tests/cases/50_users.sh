@@ -139,6 +139,61 @@ test_users_put_malformed_email() {
 register_test test_users_put_malformed_email "PUT rejects a malformed email" \
     "PUT /users/{username} with a syntactically invalid email fails with 422"
 
+test_users_put_self_allowed_fields() {
+    new_logged_in_user usersputself || { echo "setup failed"; return 1; }
+    api PUT "/users/$TEST_USERNAME" "$TOKEN" "{\"full_name\":\"Self Updated\",\"email\":\"$TEST_USERNAME@example.com\"}"
+    assert_eq 200 "$STATUS" "status" || return 1
+    assert_contains "$BODY" '"full_name":"Self Updated"' || return 1
+    assert_contains "$BODY" "\"email\":\"$TEST_USERNAME@example.com\""
+}
+register_test test_users_put_self_allowed_fields "a user can update their own full_name and email" \
+    "PUT /users/{own username} as a non-admin with full_name/email succeeds with 200 and applies both"
+
+test_users_put_other_user_forbidden() {
+    new_logged_in_user usersputotherA || { echo "setup failed"; return 1; }
+    local victim="$(unique_name usersputotherB)"
+    create_user "$victim" "pw_${RANDOM}" "Victim Original" || { echo "victim setup failed"; return 1; }
+    api PUT "/users/$victim" "$TOKEN" '{"full_name":"Hijacked"}'
+    assert_eq 403 "$STATUS" "status" || return 1
+    assert_contains "$BODY" "Admin privileges required to modify other users" || return 1
+    api GET /users "$ADMIN_KEY"
+    assert_contains "$BODY" "\"username\":\"$victim\",\"full_name\":\"Victim Original\""
+}
+register_test test_users_put_other_user_forbidden "non-admin users can't change other users' info" \
+    "PUT /users/{username} for a different user as a non-admin fails with 403 and leaves the target untouched"
+
+test_users_put_self_disallowed_field_is_admin() {
+    new_logged_in_user usersputselfadmin || { echo "setup failed"; return 1; }
+    api PUT "/users/$TEST_USERNAME" "$TOKEN" '{"is_admin":true}'
+    assert_eq 403 "$STATUS" "status" || return 1
+    assert_contains "$BODY" "You can only update your own email, full_name" || return 1
+    api GET /whoami "$TOKEN"
+    assert_contains "$BODY" '"is_admin":false'
+}
+register_test test_users_put_self_disallowed_field_is_admin "a user can't grant themselves admin via PUT" \
+    "PUT /users/{own username} with is_admin fails with 403 and is_admin stays false"
+
+test_users_put_self_disallowed_field_password() {
+    new_logged_in_user usersputselfpw || { echo "setup failed"; return 1; }
+    api PUT "/users/$TEST_USERNAME" "$TOKEN" '{"password":"sneaky-new-password"}'
+    assert_eq 403 "$STATUS" "status" || return 1
+    assert_contains "$BODY" "You can only update your own email, full_name" || return 1
+    login_as "$TEST_USERNAME" "$TEST_PASSWORD" || { echo "original password no longer works"; return 1; }
+}
+register_test test_users_put_self_disallowed_field_password "a user can't change their password via PUT" \
+    "PUT /users/{own username} with password fails with 403 (password changes go through /change-password instead) and the original password still works"
+
+test_users_put_self_mixed_fields_all_rejected() {
+    new_logged_in_user usersputselfmixed || { echo "setup failed"; return 1; }
+    api PUT "/users/$TEST_USERNAME" "$TOKEN" '{"full_name":"Should Not Apply","is_admin":true}'
+    assert_eq 403 "$STATUS" "status" || return 1
+    api GET /whoami "$TOKEN"
+    assert_contains "$BODY" '"full_name":"Test User"' || return 1
+    assert_not_contains "$BODY" '"full_name":"Should Not Apply"'
+}
+register_test test_users_put_self_mixed_fields_all_rejected "a disallowed field rejects the whole PUT" \
+    "PUT /users/{own username} mixing full_name with is_admin fails entirely with 403 -- full_name is not applied either"
+
 test_users_put_admin_remove_admin_flag() {
     api PUT /users/admin "$ADMIN_KEY" '{"is_admin":false}'
     assert_eq 400 "$STATUS" "status" || return 1
