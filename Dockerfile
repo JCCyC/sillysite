@@ -11,7 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DB_USER=sillysite \
     WEB_CONCURRENCY=2 \
     DB_SIZE_LIMIT_MB=0 \
-    SEED_DB=false
+    SEED_DB=false \
+    TLS_ENABLED=false \
+    TLS_HOSTNAME=
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -20,6 +22,7 @@ RUN apt-get update && \
         python3-venv \
         gosu \
         supervisor \
+        openssl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -37,8 +40,9 @@ RUN useradd --system --create-home --home-dir /home/appuser appuser && \
 
 COPY docker/entrypoint.sh /entrypoint.sh
 COPY docker/db-size-monitor.sh /usr/local/bin/db-size-monitor.sh
+COPY docker/run-api.sh /usr/local/bin/run-api.sh
 COPY docker/supervisord.conf /etc/supervisor/conf.d/sillysite.conf
-RUN chmod +x /entrypoint.sh /usr/local/bin/db-size-monitor.sh
+RUN chmod +x /entrypoint.sh /usr/local/bin/db-size-monitor.sh /usr/local/bin/run-api.sh
 
 EXPOSE 8000 5432
 

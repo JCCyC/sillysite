@@ -26,6 +26,10 @@ CPU_LIMIT="${CPU_LIMIT:-1.0}"
 DB_SIZE_LIMIT_MB="${DB_SIZE_LIMIT_MB:-0}"
 IMAGE_NAME="${IMAGE_NAME:-sillysite}"
 CONTAINER_NAME="${CONTAINER_NAME:-sillysite}"
+TLS_ENABLED="${TLS_ENABLED:-yes}"
+TLS_HOSTNAME="${TLS_HOSTNAME:-}"
+TLS_CERT_FILE="${TLS_CERT_FILE:-}"
+TLS_KEY_FILE="${TLS_KEY_FILE:-}"
 
 echo "Building image $IMAGE_NAME..."
 docker build -t "$IMAGE_NAME" ..
@@ -38,12 +42,36 @@ else
     echo "PostgreSQL will not be exposed on the host"
 fi
 
-ENV_ARGS=(-e "DB_SIZE_LIMIT_MB=${DB_SIZE_LIMIT_MB}")
-for var in DB_NAME DB_USER DB_PASSWORD API_KEY WEB_CONCURRENCY SEED_DB; do
+ENV_ARGS=(-e "DB_SIZE_LIMIT_MB=${DB_SIZE_LIMIT_MB}" -e "TLS_ENABLED=${TLS_ENABLED}")
+for var in DB_NAME DB_USER DB_PASSWORD API_KEY WEB_CONCURRENCY SEED_DB TLS_HOSTNAME; do
     if [ -n "${!var:-}" ]; then
         ENV_ARGS+=(-e "${var}=${!var}")
     fi
 done
+
+# TLS_CERT_FILE/TLS_KEY_FILE here are HOST paths to an existing certificate
+# (e.g. a real one issued by a CA) -- if both are set, bind-mount them in
+# read-only for entrypoint.sh to install; leave both unset to get a
+# self-signed certificate generated automatically instead.
+MOUNT_ARGS=()
+if [ -n "$TLS_CERT_FILE" ] && [ -n "$TLS_KEY_FILE" ]; then
+    for f in "$TLS_CERT_FILE" "$TLS_KEY_FILE"; do
+        if [ ! -f "$f" ]; then
+            echo "TLS_CERT_FILE/TLS_KEY_FILE: $f does not exist" >&2
+            exit 1
+        fi
+    done
+    MOUNT_ARGS+=(
+        -v "$(readlink -f "$TLS_CERT_FILE"):/run/sillysite-tls/cert.pem:ro"
+        -v "$(readlink -f "$TLS_KEY_FILE"):/run/sillysite-tls/key.pem:ro"
+    )
+    echo "Using the provided TLS certificate ($TLS_CERT_FILE)"
+elif [ -n "$TLS_CERT_FILE" ] || [ -n "$TLS_KEY_FILE" ]; then
+    echo "TLS_CERT_FILE and TLS_KEY_FILE must both be set together (only one was set)" >&2
+    exit 1
+elif [ "$TLS_ENABLED" = "yes" ] || [ "$TLS_ENABLED" = "true" ]; then
+    echo "No TLS_CERT_FILE/TLS_KEY_FILE set; a self-signed certificate will be generated"
+fi
 
 if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
     echo "Removing existing container $CONTAINER_NAME..."
@@ -60,6 +88,7 @@ RUN_ARGS=(-d
     --memory "$MEMORY_LIMIT"
     "${PORT_ARGS[@]}"
     "${ENV_ARGS[@]}"
+    "${MOUNT_ARGS[@]}"
     -v "${CONTAINER_NAME}_pgdata:/var/lib/postgresql/data"
     -v "${CONTAINER_NAME}_state:/var/lib/sillysite"
 )
@@ -76,9 +105,23 @@ if ! docker run "${RUN_ARGS[@]}" --cpus "$CPU_LIMIT" "$IMAGE_NAME" 2>/tmp/sillys
 fi
 rm -f /tmp/sillysite-run.err
 
+if [ "$TLS_ENABLED" = "yes" ] || [ "$TLS_ENABLED" = "true" ]; then
+    SCHEME=https
+else
+    SCHEME=http
+fi
+
 echo
-echo "Container started. The API is available at http://127.0.0.1:${API_PORT}/"
+echo "Container started. The API is available at ${SCHEME}://127.0.0.1:${API_PORT}/"
+if [ "$SCHEME" = "https" ] && [ -z "$TLS_CERT_FILE" ]; then
+    echo "Using a self-signed certificate -- clients will need to ignore/trust it manually" \
+         "(e.g. curl -k, or import $CONTAINER_NAME's cert.pem as a trusted CA)."
+fi
 echo "To retrieve the generated API key (if you didn't set one), run:"
 echo "  docker exec $CONTAINER_NAME cat /var/lib/sillysite/secrets.env"
+if [ "$SCHEME" = "https" ]; then
+    echo "To retrieve the certificate (e.g. to import it as a trusted CA), run:"
+    echo "  docker exec $CONTAINER_NAME cat /var/lib/sillysite/tls/cert.pem"
+fi
 echo "To follow logs:"
 echo "  docker logs -f $CONTAINER_NAME"

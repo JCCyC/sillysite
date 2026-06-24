@@ -442,18 +442,39 @@ redirects to `/login.html` instead.
 
 ## Docker deployment
 
-`Dockerfile` (based on `debian:stable`) packages the API and its PostgreSQL database into a
+`Dockerfile` (based on `debian:stable-slim`) packages the API and its PostgreSQL database into a
 single image, started via `docker/entrypoint.sh` and managed by `supervisord`
-(`docker/supervisord.conf`): `postgres`, the API (`gunicorn` with `uvicorn.workers.UvicornWorker`,
-worker count via `WEB_CONCURRENCY`), and `docker/db-size-monitor.sh` (enforces
-`DB_SIZE_LIMIT_MB` by toggling `default_transaction_read_only` on the database). On first run,
-`entrypoint.sh` initializes the PostgreSQL data directory (on the `pgdata` volume), creates the
-`DB_USER`/`DB_NAME` role/database, and generates/persists a random `DB_PASSWORD` and `API_KEY` in
-`/var/lib/sillysite/secrets.env` (on the `state` volume) if not provided. `docker/deploy.sh` (with
-settings from `docker/deploy.env`, see `docker/deploy.env.example`) builds the image and runs the
-container with the configured port mappings (API port, optional PostgreSQL port) and resource
-limits (`--memory`, `--cpus`, falling back to no CPU limit if the host doesn't support it). See
-`docker/DEPLOY.md` for end-user deployment instructions.
+(`docker/supervisord.conf`): `postgres`, the API (`docker/run-api.sh`, which waits for Postgres
+then runs `gunicorn` with `uvicorn.workers.UvicornWorker`, worker count via `WEB_CONCURRENCY`),
+and `docker/db-size-monitor.sh` (enforces `DB_SIZE_LIMIT_MB` by toggling
+`default_transaction_read_only` on the database). On first run, `entrypoint.sh` initializes the
+PostgreSQL data directory (on the `pgdata` volume), creates the `DB_USER`/`DB_NAME` role/database,
+and generates/persists a random `DB_PASSWORD` and `API_KEY` in `/var/lib/sillysite/secrets.env`
+(on the `state` volume) if not provided.
+
+TLS is controlled by `TLS_ENABLED` (`true`/`yes` to enable; the `Dockerfile`'s own default is
+`false`, so a bare `docker run` of the image — including the `sillysite-test` container
+`tests/run_tests.sh` builds from this same `Dockerfile` — still gets plain HTTP unless something
+explicitly turns TLS on). When enabled, `entrypoint.sh` resolves a certificate into
+`/var/lib/sillysite/tls/{cert,key}.pem` (on the `state` volume, so it survives restarts) before
+`run-api.sh` ever starts gunicorn, then exports `TLS_CERT_FILE`/`TLS_KEY_FILE` so `run-api.sh` adds
+`--certfile`/`--keyfile` to the gunicorn command (gunicorn terminates TLS itself — no separate
+reverse proxy). If both `/run/sillysite-tls/cert.pem` and `/run/sillysite-tls/key.pem` are
+present (bind-mounted in by `deploy.sh` from a real, e.g. CA-issued, certificate), those are
+installed on *every* startup, overwriting whatever's already in the `state` volume — unlike
+`secrets.env`'s persisted-value-always-wins rule, since a certificate is expected to be rotated
+over its lifetime and a DB password isn't. Otherwise, unless a certificate already persists in
+the `state` volume from a previous run, a self-signed one is generated with a 100-year expiry,
+covering `localhost`/`127.0.0.1` plus `TLS_HOSTNAME` if set (as a SAN, auto-detected as `IP:` or
+`DNS:` by shape).
+
+`docker/deploy.sh` (with settings from `docker/deploy.env`, see `docker/deploy.env.example`)
+builds the image and runs the container with the configured port mappings (API port, optional
+PostgreSQL port), resource limits (`--memory`, `--cpus`, falling back to no CPU limit if the host
+doesn't support it), and TLS settings — `TLS_ENABLED` defaults to `yes` here specifically (this is
+*the* production deployment path the feature was added for), and `TLS_CERT_FILE`/`TLS_KEY_FILE`
+(host paths to an existing certificate, both-or-neither) become the `/run/sillysite-tls/*` bind
+mounts `entrypoint.sh` looks for. See `docker/DEPLOY.md` for end-user deployment instructions.
 
 ## Dev container
 
