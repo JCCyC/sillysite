@@ -44,8 +44,9 @@ not the file itself.
   system.
 - `login.py`, `changepw.py`, all of `c/` (`login`/`changepw` only — deliberately no
   business-specific programs), all of `js/sillysite.js` and its three CLI scripts, all of
-  `java/` (`Login`/`ChangePw` only — deliberately no business-specific programs), and all of
-  `csharp/` (`Login`/`ChangePw` only — deliberately no business-specific programs) — the
+  `java/` (`Login`/`ChangePw` only — deliberately no business-specific programs), all of
+  `csharp/` (`Login`/`ChangePw` only — deliberately no business-specific programs), and all of
+  `php/` (`login.php`/`changepw.php` only — deliberately no business-specific programs) — the
   challenge/response login flow and change-password flow are business-agnostic.
 - `static/login.html`, `static/whoami.html`, `static/changepw.html`, and `/sillysite.js`.
 - `tests/lib/*`, `tests/run_tests.sh`, `tests/fast_check.sh`, `tests/hook_fast_check.sh`, and all
@@ -90,7 +91,7 @@ watches (`main.py`, `business.py`, `auth.py`, `config.py`, `database.py`, `model
 `schemas.py`), new pure-API tests belong in `tests/cases/10`–`70` so they're covered by the fast
 check too, not only the full suite.
 
-When writing or reviewing client code (Python/C/JS/Java/C# or otherwise) that checks an HTTP response
+When writing or reviewing client code (Python/C/JS/Java/C#/PHP or otherwise) that checks an HTTP response
 status, check against the endpoint's actual documented status rather than assuming `200`: `POST`
 endpoints that create a resource return `201`, `DELETE` endpoints and `POST /change-password`
 return `204` (no body). Prefer accepting the whole 2xx range (or the specific non-200 code that
@@ -285,12 +286,32 @@ prepare commits locally and let the user push manually.
   console read like Java's `Console.readPassword()` or C's termios handling) and falls back to a
   plain line read otherwise, the same pattern (and the same persistent-reader-across-prompts fix)
   as `java/Readpass.java`/`js/readpass.js`. See `csharp/README-CSHARP.md`.
+- `php/` is a PHP client library (`Sillysite`, no namespace) plus two CLI scripts (`login.php`,
+  `changepw.php`) mirroring `login.py`/`changepw.py` — deliberately no business-specific programs.
+  Uses only core PHP: stream contexts (`stream_context_create`/`file_get_contents`) for HTTP, and
+  the `hash`/`json` extensions (both enabled by default in a plain `php-cli` install, no separate
+  package) for PBKDF2/HMAC and request/response bodies — no Composer, no `vendor/`, no curl
+  extension. PHP strings are raw bytes (the source file itself is UTF-8, so a string literal is
+  already the right byte sequence), so `hash_pbkdf2`/`hash_hmac` needed no UTF-8 workaround,
+  unlike Java's legacy `PBKDF2WithHmacSHA1` gotcha (confirmed by hand against the same
+  accented/currency/CJK password used for `java/`'s and `csharp/`'s equivalent checks); PHP's
+  stream-based HTTP client also needed no version pin, unlike `java/`'s `HttpClient` (also
+  confirmed by hand against uvicorn). `login.php`/`changepw.php` have no compiled-binary wrapper
+  scripts like `java/`/`csharp/` do — PHP is interpreted, invoked directly via a
+  `#!/usr/bin/env php` shebang exactly like `js/login.js`'s `#!/usr/bin/env node`. `Readpass.php`
+  masks input via `stty -echo` (PHP has no built-in no-echo console read, so shelling out to
+  `stty` is the standard approach) when stdin is a real terminal and falls back to a plain line
+  read otherwise, the same pattern as the other bindings — but the persistent-reader fix they all
+  need is a *different* hazard here: calling `posix_isatty(STDIN)` itself on every prompt (not
+  creating a fresh reader per prompt, PHP's only has the one) is what drops already-buffered
+  piped input, confirmed by hand (`"N bytes of buffered data lost during stream conversion"`), so
+  the isatty check is made once and cached instead. See `php/README-PHP.md`.
 
 ## Tests
 
 `tests/run_tests.sh` is the single entry point covering the API itself, the Python utility
-scripts, the C, JS, Java, and C# client bindings, and the static browser pages (102 tests as of this
-writing). Run it with no
+scripts, the C, JS, Java, C#, and PHP client bindings, and the static browser pages (108 tests as
+of this writing). Run it with no
 arguments: it builds a fresh `sillysite-test` Docker image, starts it as a container (seeded via
 `SEED_DB=true`, fixed test `API_KEY`, on the first free port from `19700`), runs every test
 against that container, and writes a full report to `tests/report.txt` (live progress also
@@ -306,8 +327,8 @@ order; each calls `register_test` with a function, a short description, and a lo
 by shared helpers in `tests/lib/`: `framework.sh` (registry/runner/assertions), `api.sh`
 (HTTP + JSON helpers, user/login helpers), `docker.sh` (image/container lifecycle, `app_config`
 DB tweaks for the login/change-password timeout tests), and `proc.sh` (driving the
-Python/C/JS/Java/C# clients as subprocesses). The C client reads passwords from `/dev/tty`, not
-stdin, so driving it non-interactively needs a real controlling terminal —
+Python/C/JS/Java/C#/PHP clients as subprocesses). The C client reads passwords from `/dev/tty`,
+not stdin, so driving it non-interactively needs a real controlling terminal —
 `tests/lib/pty_drive.py` spawns it under a pty and feeds scripted prompt/answer pairs at the right
 time (sending too early loses the input,
 since the C client's `tcsetattr(..., TCSAFLUSH, ...)` when entering no-echo mode discards
@@ -361,8 +382,8 @@ persistent Postgres-only container (`sillysite-fastdb`, built from the same imag
 supervisord/gunicorn skipped in favor of running Postgres directly, seeded once and left running
 across calls) and runs the API natively via the project's own venv (`.venv/bin/uvicorn`) straight
 from the current source tree — no image rebuild, no reseeding — against the pure-API test cases
-only (`tests/cases/10`–`70`; the Python-script and C/JS/Java/C#-binding cases are skipped, since
-they add subprocess overhead and rarely break from typical app-code edits). Takes a few seconds
+only (`tests/cases/10`–`70`; the Python-script and C/JS/Java/C#/PHP-binding cases are skipped,
+since they add subprocess overhead and rarely break from typical app-code edits). Takes a few seconds
 once the fastdb container exists, versus minutes for the full suite. It is *not* a substitute for
 `tests/run_tests.sh` — that remains the authoritative, full-coverage check to run before
 considering a feature done. The fastdb container's data isn't reset between calls, so harmless
@@ -481,8 +502,8 @@ mounts `entrypoint.sh` looks for. See `docker/DEPLOY.md` for end-user deployment
 `.devcontainer/` provides a VS Code Dev Containers setup for local development, independent of
 the `Dockerfile`/`docker/` production deployment story above. `.devcontainer/devcontainer.json`
 configures a multi-service `docker-compose` setup (`.devcontainer/docker-compose.yml`): an `app`
-service (built from `.devcontainer/Dockerfile`, layering Python, the C/JS/Java/C# toolchains, the
-`docker` CLI, and a headless Chromium browser for the static-pages test on top of the standard
+service (built from `.devcontainer/Dockerfile`, layering Python, the C/JS/Java/C#/PHP toolchains,
+the `docker` CLI, and a headless Chromium browser for the static-pages test on top of the standard
 `mcr.microsoft.com/devcontainers/base:debian-12` image) and a `db` service (plain `postgres:16`,
 configured via `environment:` so no `.env` file is needed inside the container — `config.py`'s
 `load_dotenv()` doesn't override already-set environment variables). One official Feature

@@ -1,8 +1,8 @@
 # Dev Container image: everything needed to edit, run, and test SillySite
-# interactively (Python, the C, JS, Java, and C# bindings' toolchains, and a
-# browser for the static-pages test). Built on the standard Dev Containers
-# base image, which already sets up the non-root `vscode` user that
-# devcontainer.json's "remoteUser" expects.
+# interactively (Python, the C, JS, Java, C#, and PHP bindings' toolchains,
+# and a browser for the static-pages test). Built on the standard Dev
+# Containers base image, which already sets up the non-root `vscode` user
+# that devcontainer.json's "remoteUser" expects.
 FROM mcr.microsoft.com/devcontainers/base:debian-12
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         chromium-driver \
         openjdk-17-jdk-headless \
         mono-complete \
+        php-cli \
         jq \
         docker.io \
     && rm -rf /var/lib/apt/lists/*

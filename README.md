@@ -164,6 +164,7 @@ available for:
 - **JavaScript** (Node and browser) — see [`js/README-JS.md`](js/README-JS.md)
 - **Java** — see [`java/README-JAVA.md`](java/README-JAVA.md)
 - **C#** (Mono) — see [`csharp/README-CSHARP.md`](csharp/README-CSHARP.md)
+- **PHP** — see [`php/README-PHP.md`](php/README-PHP.md)
 
 More languages are planned.
 
